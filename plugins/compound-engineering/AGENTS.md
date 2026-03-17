@@ -9,13 +9,13 @@ They supplement the repo-root `AGENTS.md`.
 
 **IMPORTANT**: Routine PRs should not cut releases for this plugin.
 
-The repo uses an automatied release process to prepare plugin releases, including version selection and changelog generation. Because multiple PRs may merge before the next release, contributors cannot know the final released version from within an individual PR.
+The repo uses an automated release process to prepare plugin releases, including version selection and changelog generation. Because multiple PRs may merge before the next release, contributors cannot know the final released version from within an individual PR.
 
 ### Contributor Rules
 
 - Do **not** manually bump `.claude-plugin/plugin.json` version in a normal feature PR.
 - Do **not** manually bump `.claude-plugin/marketplace.json` plugin version in a normal feature PR.
-- Do **not** cut a release section in `CHANGELOG.md` for a normal feature PR.
+- Do **not** cut a release section in the canonical root `CHANGELOG.md` for a normal feature PR.
 - Do update substantive docs that are part of the actual change, such as `README.md`, component tables, usage instructions, or counts when they would otherwise become inaccurate.
 
 ### Pre-Commit Checklist
@@ -24,7 +24,7 @@ Before committing ANY changes:
 
 - [ ] No manual release-version bump in `.claude-plugin/plugin.json`
 - [ ] No manual release-version bump in `.claude-plugin/marketplace.json`
-- [ ] No manual release entry added to `CHANGELOG.md`
+- [ ] No manual release entry added to the root `CHANGELOG.md`
 - [ ] README.md component counts verified
 - [ ] README.md tables accurate (agents, commands, skills)
 - [ ] plugin.json description matches current counts

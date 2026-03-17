@@ -40,17 +40,19 @@ When working on this repository, follow the compounding engineering process:
 
 ## CLI Release Versioning
 
-The repository has two separate version surfaces:
+The repository has multiple release components:
 
-1. **Root CLI package** — `package.json`, root `CHANGELOG.md`, and repo `v*` tags all share one release line managed by semantic-release on `main`.
-2. **Embedded marketplace plugin metadata** — `plugins/compound-engineering/.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json` track the distributed Claude plugin metadata and can differ from the root CLI package version.
+1. **CLI** — the npm package at `package.json`
+2. **compound-engineering** — plugin metadata under `plugins/compound-engineering/`
+3. **coding-tutor** — plugin metadata under `plugins/coding-tutor/`
+4. **marketplace** — marketplace metadata under `.claude-plugin/`
 
 Rules:
 
-- Do not start a separate root CLI version stream. The root CLI follows the repo tag line.
-- Do not hand-bump the root CLI `package.json` or root `CHANGELOG.md` for routine feature work. Use conventional commits and let semantic-release write the released root version back to git.
-- Keep the root `CHANGELOG.md` header block aligned with `.releaserc.json` `changelogTitle`. If they drift, semantic-release will prepend release notes above the header.
-- Do not guess or hand-bump embedded plugin release versions in routine PRs. The automated release process decides the next plugin/marketplace version and generate release changelog entries after choosing which merged changes ship together.
+- Do not hand-bump release-owned versions or canonical changelog entries in routine feature work.
+- Use conventional titles such as `feat:` and `fix:` so release automation can infer release intent.
+- Component scope in titles is optional; file ownership is the primary component detector.
+- The root `CHANGELOG.md` is the canonical changelog for the repo.
 
 ### Adding a New Plugin
 
@@ -106,19 +108,13 @@ Contributors should not guess the next released plugin version in a normal PR:
 - [ ] Do not cut a release section in `plugins/compound-engineering/CHANGELOG.md` for a normal feature PR
 - [ ] `CLAUDE.md` → update structure diagram if needed
 
-#### 5. Rebuild documentation site
+#### 5. Validate release-owned metadata
 
-Run the release-docs command to update all documentation pages:
+Use the repo-owned validation scripts instead of `release-docs`:
 
 ```bash
-claude /release-docs
+bun run release:validate
 ```
-
-This will:
-- Update stats on the landing page
-- Regenerate reference pages (agents, commands, skills, MCP servers)
-- Update the changelog page
-- Validate all counts match actual files
 
 #### 6. Validate JSON files
 

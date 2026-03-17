@@ -13,20 +13,20 @@ component: plugin-development
 
 When making changes to the compound-engineering plugin, documentation can get out of sync with the actual components (agents, commands, skills). This leads to confusion about what's included in each version and makes it difficult to track changes over time.
 
-This document applies to the embedded marketplace plugin metadata, not the root CLI package release version. The root CLI package (`package.json`, root `CHANGELOG.md`, repo `v*` tags) is managed by semantic-release and follows the repository tag line.
+This document applies to release-owned plugin metadata and changelog surfaces, not ordinary feature work. The repo now treats `cli`, `compound-engineering`, `coding-tutor`, and `marketplace` as separate release components prepared by release automation.
 
 ## Solution
 
 **Routine PRs should not cut plugin releases.**
 
-The embedded plugin version is release-owned metadata. The maintainer uses a local slash command to choose the next version and generate release changelog entries after deciding which merged changes ship together. Because multiple PRs may merge before release, contributors should not guess release versions inside individual PRs.
+Embedded plugin versions are release-owned metadata. Release automation prepares the next versions and changelog entries after deciding which merged changes ship together. Because multiple PRs may merge before release, contributors should not guess release versions inside individual PRs.
 
 Contributors should:
 
 1. **Avoid release bookkeeping in normal PRs**
    - Do not manually bump `.claude-plugin/plugin.json`
    - Do not manually bump `.claude-plugin/marketplace.json`
-   - Do not cut release sections in `CHANGELOG.md`
+   - Do not cut release sections in the root `CHANGELOG.md`
 
 2. **Keep substantive docs accurate**
    - Verify component counts match actual files
@@ -49,7 +49,7 @@ Before committing changes to compound-engineering plugin:
 ## File Locations
 
 - Version is release-owned: `.claude-plugin/plugin.json` and `.claude-plugin/marketplace.json`
-- Changelog release sections are release-owned: `CHANGELOG.md`
+- Changelog release sections are release-owned: root `CHANGELOG.md`
 - Readme: `README.md`
 
 ## Example Workflow
@@ -60,7 +60,7 @@ When adding a new agent:
 2. Update README agent table
 3. Update README component count
 4. Update plugin metadata description with new counts if needed
-5. Leave version selection and release changelog generation to the maintainer's release command
+5. Leave version selection and release changelog generation to release automation
 
 ## Prevention
 
@@ -73,7 +73,6 @@ This documentation serves as a reminder. When Claude Code works on this plugin, 
 ## Related Files
 
 - `plugins/compound-engineering/.claude-plugin/plugin.json`
-- `plugins/compound-engineering/CHANGELOG.md`
 - `plugins/compound-engineering/README.md`
 - `package.json`
 - `CHANGELOG.md`
