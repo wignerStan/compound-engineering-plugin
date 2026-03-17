@@ -235,12 +235,16 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-   **Attribution substitutions** — replace brackets with actual values:
-   - `[MODEL]` — your model name (e.g., "Claude Opus 4.6", "Claude Sonnet 4.6", "GPT-5.4")
-   - `[HARNESS]` / `[HARNESS_URL]` — the tool running you (e.g., "Claude Code" / `https://claude.com/claude-code`, "Codex" / `https://openai.com/codex`)
-   - `[VERSION]` — read from `plugins/compound-engineering/.claude-plugin/plugin.json` → `version`
+   **Fill in at commit/PR time:**
 
-   **Multi-agent note:** If you are a subagent creating commits or PRs on behalf of a parent agent, you are still responsible for filling in accurate attribution. Read `plugin.json` for the version; use your own model name and harness.
+   | Placeholder | Value | Example |
+   |-------------|-------|---------|
+   | `[MODEL]` | Your model name | Claude Opus 4.6, GPT-5.4 |
+   | `[HARNESS]` | Tool running you | Claude Code, Codex, Gemini CLI |
+   | `[HARNESS_URL]` | Link to that tool | `https://claude.com/claude-code` |
+   | `[VERSION]` | `plugin.json` → `version` | 2.40.0 |
+
+   Subagents creating commits/PRs are equally responsible for accurate attribution.
 
 2. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
 

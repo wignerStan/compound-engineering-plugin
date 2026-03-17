@@ -367,10 +367,14 @@ Include the attribution footer (fill in your actual values):
 Co-Authored-By: [MODEL] <noreply@anthropic.com>
 ```
 
-**Substitution guide** — replace brackets with actual values at commit/PR time:
-- `[MODEL]` — your actual model name (e.g., "Claude Opus 4.6", "Claude Sonnet 4.6", "GPT-5.4")
-- `[HARNESS]` / `[HARNESS_URL]` — the tool running you (e.g., "Claude Code" / `https://claude.com/claude-code`, "Codex" / `https://openai.com/codex`, "Gemini CLI" / `https://github.com/google-gemini/gemini-cli`)
-- `[VERSION]` — read from `plugins/compound-engineering/.claude-plugin/plugin.json` → `version` field
+**Fill in at commit/PR time:**
+
+| Placeholder | Value | Example |
+|-------------|-------|---------|
+| `[MODEL]` | Your model name | Claude Opus 4.6, Claude Sonnet 4.6, GPT-5.4 |
+| `[HARNESS]` | Tool running you | Claude Code, Codex, Gemini CLI |
+| `[HARNESS_URL]` | Link to that tool | `https://claude.com/claude-code` |
+| `[VERSION]` | `plugin.json` → `version` | 2.40.0 |
 
 ## Resources to search for when needing more information
 
