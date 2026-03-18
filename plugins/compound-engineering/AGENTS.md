@@ -118,8 +118,8 @@ grep -E '^description:' skills/*/SKILL.md
 
 ## Adding Components
 
-- **New skill:** Create `skills/<name>/SKILL.md` with required YAML frontmatter (`name`, `description`). Reference files go in `skills/<name>/references/`.
-- **New agent:** Create `agents/<category>/<name>.md` with frontmatter. Categories: `review`, `research`, `design`, `docs`, `workflow`.
+- **New skill:** Create `skills/<name>/SKILL.md` with required YAML frontmatter (`name`, `description`). Reference files go in `skills/<name>/references/`. Add the skill to the appropriate category table in `README.md` and update the skill count.
+- **New agent:** Create `agents/<category>/<name>.md` with frontmatter. Categories: `review`, `research`, `design`, `docs`, `workflow`. Add the agent to `README.md` and update the agent count.
 
 ## Beta Skills
 

@@ -7,7 +7,7 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 | Component | Count |
 |-----------|-------|
 | Agents | 25+ |
-| Skills | 40+ |
+| Skills | 45+ |
 | MCP Servers | 1 |
 
 ## Agents
@@ -135,6 +135,7 @@ Core workflow commands use `ce:` prefix to unambiguously identify them as compou
 | `file-todos` | File-based todo tracking system |
 | `git-worktree` | Manage Git worktrees for parallel development |
 | `proof` | Create, edit, and share documents via Proof collaborative editor |
+| `claude-permissions-optimizer` | Optimize Claude Code permissions from session history |
 | `resolve-pr-parallel` | Resolve PR review comments in parallel |
 | `setup` | Configure which review agents run for your project |
 
