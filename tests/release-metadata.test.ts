@@ -2,7 +2,11 @@ import { mkdtemp, mkdir, writeFile } from "fs/promises"
 import os from "os"
 import path from "path"
 import { afterEach, describe, expect, test } from "bun:test"
-import { buildCompoundEngineeringDescription, syncReleaseMetadata } from "../src/release/metadata"
+import {
+  buildCompoundEngineeringDescription,
+  getCompoundEngineeringCounts,
+  syncReleaseMetadata,
+} from "../src/release/metadata"
 
 const tempRoots: string[] = []
 
@@ -83,10 +87,24 @@ async function makeFixtureRoot(): Promise<string> {
 }
 
 describe("release metadata", () => {
-  test("builds the current compound-engineering manifest description from repo counts", async () => {
+  test("reports current compound-engineering counts from the repo", async () => {
+    const counts = await getCompoundEngineeringCounts(process.cwd())
+
+    expect(counts).toEqual({
+      agents: expect.any(Number),
+      skills: expect.any(Number),
+      mcpServers: expect.any(Number),
+    })
+    expect(counts.agents).toBeGreaterThan(0)
+    expect(counts.skills).toBeGreaterThan(0)
+    expect(counts.mcpServers).toBeGreaterThanOrEqual(0)
+  })
+
+  test("builds a stable compound-engineering manifest description", async () => {
     const description = await buildCompoundEngineeringDescription(process.cwd())
+
     expect(description).toBe(
-      "AI-powered development tools. 29 agents, 44 skills, 1 MCP server for code review, research, design, and workflow automation.",
+      "AI-powered development tools for code review, research, design, and workflow automation.",
     )
   })
 

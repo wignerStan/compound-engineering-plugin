@@ -41,6 +41,18 @@ export type MetadataSyncResult = {
   updates: FileUpdate[]
 }
 
+export type CompoundEngineeringCounts = {
+  agents: number
+  skills: number
+  mcpServers: number
+}
+
+const COMPOUND_ENGINEERING_DESCRIPTION =
+  "AI-powered development tools for code review, research, design, and workflow automation."
+
+const COMPOUND_ENGINEERING_MARKETPLACE_DESCRIPTION =
+  "AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last."
+
 function resolveExpectedVersion(
   explicitVersion: string | undefined,
   fallbackVersion: string,
@@ -90,12 +102,23 @@ export async function countMcpServers(pluginRoot: string): Promise<number> {
   return Object.keys(manifest.mcpServers ?? {}).length
 }
 
-export async function buildCompoundEngineeringDescription(root: string): Promise<string> {
+export async function getCompoundEngineeringCounts(root: string): Promise<CompoundEngineeringCounts> {
   const pluginRoot = path.join(root, "plugins", "compound-engineering")
-  const agents = await countMarkdownFiles(path.join(pluginRoot, "agents"))
-  const skills = await countSkillDirectories(path.join(pluginRoot, "skills"))
-  const mcpServers = await countMcpServers(pluginRoot)
-  return `AI-powered development tools. ${agents} agents, ${skills} skills, ${mcpServers} MCP server${mcpServers === 1 ? "" : "s"} for code review, research, design, and workflow automation.`
+  const [agents, skills, mcpServers] = await Promise.all([
+    countMarkdownFiles(path.join(pluginRoot, "agents")),
+    countSkillDirectories(path.join(pluginRoot, "skills")),
+    countMcpServers(pluginRoot),
+  ])
+
+  return { agents, skills, mcpServers }
+}
+
+export async function buildCompoundEngineeringDescription(_root: string): Promise<string> {
+  return COMPOUND_ENGINEERING_DESCRIPTION
+}
+
+export async function buildCompoundEngineeringMarketplaceDescription(_root: string): Promise<string> {
+  return COMPOUND_ENGINEERING_MARKETPLACE_DESCRIPTION
 }
 
 export async function syncReleaseMetadata(options: SyncOptions = {}): Promise<MetadataSyncResult> {
@@ -105,6 +128,7 @@ export async function syncReleaseMetadata(options: SyncOptions = {}): Promise<Me
   const updates: FileUpdate[] = []
 
   const compoundDescription = await buildCompoundEngineeringDescription(root)
+  const compoundMarketplaceDescription = await buildCompoundEngineeringMarketplaceDescription(root)
 
   const compoundClaudePath = path.join(root, "plugins", "compound-engineering", ".claude-plugin", "plugin.json")
   const compoundCursorPath = path.join(root, "plugins", "compound-engineering", ".cursor-plugin", "plugin.json")
@@ -178,8 +202,8 @@ export async function syncReleaseMetadata(options: SyncOptions = {}): Promise<Me
         plugin.version = expectedCompoundVersion
         changed = true
       }
-      if (plugin.description !== `AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes ${await countMarkdownFiles(path.join(root, "plugins", "compound-engineering", "agents"))} specialized agents and ${await countSkillDirectories(path.join(root, "plugins", "compound-engineering", "skills"))} skills.`) {
-        plugin.description = `AI-powered development tools that get smarter with every use. Make each unit of engineering work easier than the last. Includes ${await countMarkdownFiles(path.join(root, "plugins", "compound-engineering", "agents"))} specialized agents and ${await countSkillDirectories(path.join(root, "plugins", "compound-engineering", "skills"))} skills.`
+      if (plugin.description !== compoundMarketplaceDescription) {
+        plugin.description = compoundMarketplaceDescription
         changed = true
       }
     }

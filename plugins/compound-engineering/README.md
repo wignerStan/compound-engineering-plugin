@@ -6,15 +6,15 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 29 |
-| Skills | 44 |
+| Agents | 25+ |
+| Skills | 40+ |
 | MCP Servers | 1 |
 
 ## Agents
 
 Agents are organized into categories for easier discovery.
 
-### Review (15)
+### Review
 
 | Agent | Description |
 |-------|-------------|
@@ -34,7 +34,7 @@ Agents are organized into categories for easier discovery.
 | `schema-drift-detector` | Detect unrelated schema.rb changes in PRs |
 | `security-sentinel` | Security audits and vulnerability assessments |
 
-### Research (6)
+### Research
 
 | Agent | Description |
 |-------|-------------|
@@ -45,7 +45,7 @@ Agents are organized into categories for easier discovery.
 | `learnings-researcher` | Search institutional learnings for relevant past solutions |
 | `repo-research-analyst` | Research repository structure and conventions |
 
-### Design (3)
+### Design
 
 | Agent | Description |
 |-------|-------------|
@@ -53,7 +53,7 @@ Agents are organized into categories for easier discovery.
 | `design-iterator` | Iteratively refine UI through systematic design iterations |
 | `figma-design-sync` | Synchronize web implementations with Figma designs |
 
-### Workflow (4)
+### Workflow
 
 | Agent | Description |
 |-------|-------------|
@@ -62,7 +62,7 @@ Agents are organized into categories for easier discovery.
 | `pr-comment-resolver` | Address PR comments and implement fixes |
 | `spec-flow-analyzer` | Analyze user flows and identify gaps in specifications |
 
-### Docs (1)
+### Docs
 
 | Agent | Description |
 |-------|-------------|
