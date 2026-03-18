@@ -9,6 +9,14 @@ It also contains:
 
 `AGENTS.md` is the canonical repo instruction file. Root `CLAUDE.md` exists only as a compatibility shim for tools and conversions that still look for it.
 
+## Quick Start
+
+```bash
+bun install
+bun test                  # full test suite
+bun run release:validate  # check plugin/marketplace consistency
+```
+
 ## Working Agreement
 
 - **Branching:** Create a feature branch for any non-trivial change. If already on the correct branch for the task, keep using it; do not create additional branches or worktrees unless explicitly requested.
@@ -17,6 +25,16 @@ It also contains:
 - **Release versioning:** Releases are prepared by release automation, not normal feature PRs. The repo now has multiple release components (`cli`, `compound-engineering`, `coding-tutor`, `marketplace`) and one canonical root `CHANGELOG.md`. Use conventional titles such as `feat:` and `fix:` so release automation can classify change intent, but do not hand-bump release-owned versions or changelog entries in routine PRs.
 - **Output Paths:** Keep OpenCode output at `opencode.json` and `.opencode/{agents,skills,plugins}`. For OpenCode, command go to `~/.config/opencode/commands/<name>.md`; `opencode.json` is deep-merged (never overwritten wholesale).
 - **ASCII-first:** Use ASCII unless the file already contains Unicode.
+
+## Directory Layout
+
+```
+src/              CLI entry point, parsers, converters, target writers
+plugins/          Plugin workspaces (compound-engineering, coding-tutor)
+.claude-plugin/   Claude marketplace catalog metadata
+tests/            Converter, writer, and CLI tests + fixtures
+docs/             Requirements, plans, solutions, and target specs
+```
 
 ## Repo Surfaces
 
@@ -59,9 +77,9 @@ cat plugins/compound-engineering/.claude-plugin/plugin.json | jq .
 - Component scope is optional. Example: `feat(coding-tutor): add quiz reset`.
 - Breaking changes must be explicit with `!` or a breaking-change footer so release automation can classify them correctly.
 
-## Adding a New Target Provider (e.g., Codex)
+## Adding a New Target Provider
 
-Use this checklist when introducing a new target provider:
+Only add a provider when the target format is stable, documented, and has a clear mapping for tools/permissions/hooks. Use this checklist:
 
 1. **Define the target entry**
    - Add a new handler in `src/targets/index.ts` with `implemented: false` until complete.
@@ -85,17 +103,6 @@ Use this checklist when introducing a new target provider:
 5. **Docs**
    - Update README with the new `--to` option and output locations.
 
-## When to Add a Provider
-
-Add a new provider when at least one of these is true:
-
-- A real user/workflow needs it now.
-- The target format is stable and documented.
-- There’s a clear mapping for tools/permissions/hooks.
-- You can write fixtures + tests that validate the mapping.
-
-Avoid adding a provider if the target spec is unstable or undocumented.
-
 ## Agent References in Skills
 
 When referencing agents from within skill SKILL.md files (e.g., via the `Agent` or `Task` tool), always use the **fully-qualified namespace**: `compound-engineering:<category>:<agent-name>`. Never use the short agent name alone.
@@ -108,4 +115,7 @@ This prevents resolution failures when the plugin is installed alongside other p
 
 ## Repository Docs Convention
 
-- **Plans** live in `docs/plans/` and track implementation progress.
+- **Requirements** live in `docs/brainstorms/` — requirements exploration and ideation.
+- **Plans** live in `docs/plans/` — implementation plans and progress tracking.
+- **Solutions** live in `docs/solutions/` — documented decisions and patterns.
+- **Specs** live in `docs/specs/` — target platform format specifications.
