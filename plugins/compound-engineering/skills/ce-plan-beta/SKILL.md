@@ -145,12 +145,13 @@ Prepare a concise planning context summary (a paragraph or two) to pass as input
 
 Run these agents in parallel:
 
-- Task compound-engineering:research:repo-research-analyst(planning context summary)
+- Task compound-engineering:research:repo-research-analyst(Scope: technology, architecture, patterns. {planning context summary})
 - Task compound-engineering:research:learnings-researcher(planning context summary)
 
 Collect:
-- Existing patterns and conventions to follow
-- Relevant files, modules, and tests
+- Technology stack and versions (used in section 1.2 to make sharper external research decisions)
+- Architectural patterns and conventions to follow
+- Implementation patterns, relevant files, modules, and tests
 - AGENTS.md guidance that materially affects the plan, with CLAUDE.md used only as compatibility fallback when present
 - Institutional learnings from `docs/solutions/`
 

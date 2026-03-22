@@ -209,7 +209,7 @@ Use fully-qualified agent names inside Task calls.
 
 **Requirements Trace / Open Questions classification**
 - `compound-engineering:workflow:spec-flow-analyzer` for missing user flows, edge cases, and handoff gaps
-- `compound-engineering:research:repo-research-analyst` for repo-grounded patterns, conventions, and implementation reality checks
+- `compound-engineering:research:repo-research-analyst` (Scope: `architecture, patterns`) for repo-grounded patterns, conventions, and implementation reality checks
 
 **Context & Research / Sources & References gaps**
 - `compound-engineering:research:learnings-researcher` for institutional knowledge and past solved problems
@@ -223,11 +223,11 @@ Use fully-qualified agent names inside Task calls.
 
 **High-Level Technical Design**
 - `compound-engineering:review:architecture-strategist` for validating that the technical design accurately represents the intended approach and identifying gaps
-- `compound-engineering:research:repo-research-analyst` for grounding the technical design in existing repo patterns and conventions
+- `compound-engineering:research:repo-research-analyst` (Scope: `architecture, patterns`) for grounding the technical design in existing repo patterns and conventions
 - Add `compound-engineering:research:best-practices-researcher` when the technical design involves a DSL, API surface, or pattern that benefits from external validation
 
 **Implementation Units / Verification**
-- `compound-engineering:research:repo-research-analyst` for concrete file targets, patterns to follow, and repo-specific sequencing clues
+- `compound-engineering:research:repo-research-analyst` (Scope: `patterns`) for concrete file targets, patterns to follow, and repo-specific sequencing clues
 - `compound-engineering:review:pattern-recognition-specialist` for consistency, duplication risks, and alignment with existing patterns
 - Add `compound-engineering:workflow:spec-flow-analyzer` when sequencing depends on user flow or handoff completeness
 
@@ -249,6 +249,7 @@ Use fully-qualified agent names inside Task calls.
 #### 3.2 Agent Prompt Shape
 
 For each selected section, pass:
+- The scope prefix from section 3.1 (e.g., `Scope: architecture, patterns.`) when the agent supports scoped invocation
 - A short plan summary
 - The exact section text
 - Why the section was selected, including which checklist triggers fired
