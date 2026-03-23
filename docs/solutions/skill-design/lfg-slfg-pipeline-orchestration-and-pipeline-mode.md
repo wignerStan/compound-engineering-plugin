@@ -74,12 +74,13 @@ Added a `## Pipeline Mode` section that defines behavior when invoked from LFG/S
 - **Phase 0.1:** If a relevant requirements doc already exists in `docs/brainstorms/`, return control immediately. `ce:plan` already discovers these docs in its Phase 0 and will use them.
 - **Empty feature description:** Ask the user. This is the one interaction that cannot be skipped -- brainstorm owns "what do you want to build?"
 - **Phase 0.2:** Genuine skip when requirements are clear. Do NOT proceed to Phase 1.3 (interactive dialogue) or Phase 3.
-- **All other AskUserQuestion calls:** Skip entirely. Make decisions autonomously.
+- **Workflow prompts** (handoff menus, "what do you want to do next?", "resume or start fresh?", post-generation options): Skip. The pipeline controls routing.
+- **Content prompts** (clarifying what to build, resolving ambiguity, scoping questions): Still ask. The user is present and bad requirements waste every downstream step.
 - **Phase 4 handoff:** Skip entirely. Do not invoke `ce:plan`, do not present options. Write the requirements doc and return control to the calling pipeline.
 
 ### 2. Added brainstorm step to lfg and slfg
 
-Inserted `/ce:brainstorm $ARGUMENTS` as step 2 in both skills (after optional ralph-loop, before `ce:plan`). Renumbered all subsequent steps and updated cross-references.
+Inserted `/ce:brainstorm $ARGUMENTS` as step 1 in both skills (before optional ralph-loop). Ralph-loop is repositioned to step 2 -- after brainstorm (which may need user interaction) but before plan (which is autonomous). Renumbered all subsequent steps and updated cross-references.
 
 In slfg specifically: brainstorm runs in the Sequential Phase without swarm mode -- only `ce:work` uses swarm.
 
@@ -105,6 +106,14 @@ The skill itself detects pipeline context and adjusts behavior. The calling pipe
 
 Brainstorm owns the question "what do you want to build?" If the user invokes `/lfg` without arguments, brainstorm is the skill that asks for clarification -- not `ce:plan`. This is the one AskUserQuestion that pipeline mode does NOT skip.
 
+### Step ordering matters for resolve-todo
+
+The old lfg ran resolve-todo before test-browser, meaning test-browser findings were never resolved. The corrected order is: review -> test-browser -> resolve-todo-parallel. This ensures all findings from both review and testing get addressed.
+
+### Feature-video is conditional on project type
+
+Not all projects have a browser-based UI to record. CLI tools, plugins, libraries, and APIs have no visual walkthrough to capture. Feature-video is skipped when the project has no browser-based UI.
+
 ### No explicit wiring between brainstorm output and plan input
 
 `ce:plan` Phase 0 already searches `docs/brainstorms/` for matching requirements docs. When brainstorm writes its output there and returns control, `ce:plan` discovers it through its existing search. No new data-passing mechanism was needed.
@@ -121,4 +130,4 @@ Brainstorm owns the question "what do you want to build?" If the user invokes `/
 - `plugins/compound-engineering/skills/lfg/SKILL.md` -- brainstorm step inserted
 - `plugins/compound-engineering/skills/slfg/SKILL.md` -- brainstorm step inserted
 - `plugins/compound-engineering/AGENTS.md` -- Pipeline Mode Convention section added
-- `plugins/compound-engineering/skills/ce-plan/SKILL.md` -- existing Pipeline mode precedent (not modified)
+- `plugins/compound-engineering/skills/ce-plan/SKILL.md` -- pipeline mode promoted from one-liner to proper section with workflow-vs-content distinction
