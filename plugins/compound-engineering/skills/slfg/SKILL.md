@@ -66,9 +66,9 @@ Skills run in autopilot mode: skip workflow prompts (handoff menus, "what next?"
 #### Sequential Phase
 
 3. `/ce:plan $ARGUMENTS`
-   - If brainstorm collected the feature description because `$ARGUMENTS` was empty, carry that clarified description forward into the `ce:plan` invocation instead of calling it with empty arguments. Do not ask the user for the same description twice.
+   - If brainstorm collected the feature description because `$ARGUMENTS` was empty, carry that clarified description forward into the `ce:plan` invocation instead of calling it with empty arguments. Treat that clarified description as the resolved planning input for all `ce:plan` attempts in this run. Do not ask the user for the same description twice.
 
-   GATE: Verify that `ce:plan` produced a plan file in `docs/plans/`. If no plan file was created, run `/ce:plan $ARGUMENTS` again. Do NOT proceed until a written plan exists.
+   GATE: Verify that `ce:plan` produced a plan file in `docs/plans/`. If no plan file was created, run `ce:plan` again with the same resolved planning input used for the first `ce:plan` attempt. Do NOT fall back to the original empty `$ARGUMENTS`, and do NOT proceed until a written plan exists.
 
 4. **Conditionally** run `/compound-engineering:deepen-plan`
    - Run only if the plan is `Standard` or `Deep`, touches a high-risk area (auth, security, payments, migrations, external APIs, significant rollout concerns), or still has obvious confidence gaps in decisions, sequencing, system-wide impact, risks, or verification
@@ -91,6 +91,8 @@ Wait for both to complete before continuing.
 #### Finalize Phase
 
 8. `/compound-engineering:resolve-todo-parallel` -- resolve findings from review and testing, compound on learnings, clean up completed todos
+   - GATE: If todo resolution changed code or behavior, re-verify the final state before proceeding. Run the narrowest checks that cover what changed (for example targeted tests, lint/typecheck, or another browser check for UI-affecting changes). If todo resolution made no functional code changes, briefly note that and continue.
+
 9. **Conditionally** run `/compound-engineering:feature-video` -- record a walkthrough and add to the PR. Skip if `autopilot_features.feature_video` is `false`. If the setting is missing, assume enabled. Also skip if the project has no browser-based UI (e.g., CLI tools, plugins, libraries, APIs).
 10. Output `<promise>DONE</promise>` when all preceding steps are complete
 
