@@ -112,10 +112,8 @@ Suppress findings below 0.50 confidence. Store them as residual concerns for pot
 Fingerprint each finding using `normalize(section) + normalize(title)`. Normalization: lowercase, strip punctuation, collapse whitespace.
 
 When fingerprints match across personas:
-- Keep the highest severity
-- Keep the highest confidence
-- Union all evidence arrays
-- Note all agreeing reviewers (e.g., "coherence, feasibility")
+- If the findings recommend **opposing actions** (e.g., one says cut, the other says keep), do not merge -- preserve both for contradiction resolution in 3.5
+- Otherwise merge: keep the highest severity, keep the highest confidence, union all evidence arrays, note all agreeing reviewers (e.g., "coherence, feasibility")
 
 ### 3.4 Promote Residual Concerns
 
@@ -141,6 +139,8 @@ Specific conflict patterns:
 |---------------|-------|
 | `auto` | Apply automatically -- local deterministic fix (terminology, formatting, cross-references) |
 | `present` | Present to user for judgment |
+
+Demote any `auto` finding that lacks a `suggested_fix` to `present` -- the orchestrator cannot apply a fix without concrete replacement text.
 
 ### 3.7 Sort
 
