@@ -71,7 +71,9 @@ Before asking planning questions, search `docs/brainstorms/` for files matching 
 - It was created within the last 30 days (use judgment to override if the document is clearly still relevant or clearly stale)
 - It appears to cover the same user problem or scope
 
-If multiple source documents match, ask which one to use using the platform's blocking question tool when available (see Interaction Method). Otherwise, present numbered options in chat and wait for the user's reply before proceeding.
+When evaluating candidates, skip any requirements document that already has a completed plan referencing it (a plan in `docs/plans/` with `origin:` pointing to the doc and `status: completed`).
+
+If multiple source documents match, prefer the one whose topic and problem frame most closely match the current feature description, not just the most recent. If genuine ambiguity remains (two or more docs are equally close matches), ask which one to use using the platform's blocking question tool when available (see Interaction Method). Otherwise, present numbered options in chat and wait for the user's reply before proceeding.
 
 #### 0.3 Use the Source Document as Primary Input
 
