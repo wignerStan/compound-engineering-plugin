@@ -15,18 +15,23 @@ For every plan, ask these three questions. Produce a finding for each one where 
 - **Right problem?** Could a different framing yield a simpler or more impactful solution? Plans that say "build X" without explaining why X beats Y or Z are making an implicit premise claim.
 - **Actual outcome?** Trace from proposed work to user impact. Is this the most direct path, or is it solving a proxy problem? Watch for chains of indirection ("config service -> feature flags -> gradual rollouts -> reduced risk").
 - **What if we did nothing?** Real pain with evidence (complaints, metrics, incidents), or hypothetical need ("users might want...")? Hypothetical needs get challenged harder.
+- **Inversion: what would make this fail?** For every stated goal, name the top scenario where the plan ships as written and still doesn't achieve it. Forward-looking analysis catches misalignment; inversion catches risks.
 
-### 2. Implementation alternatives
+### 2. Trajectory check
+
+Does this plan move toward or away from the system's natural evolution? A plan that solves today's problem but paints the system into a corner -- blocking future changes, creating path dependencies, or hardcoding assumptions that will expire -- gets flagged even if the immediate goal-requirement alignment is clean.
+
+### 3. Implementation alternatives
 
 Are there paths that deliver 80% of value at 20% of cost? Buy-vs-build considered? Would a different sequence deliver value sooner? Only produce findings when a concrete simpler alternative exists.
 
-### 3. Goal-requirement alignment
+### 4. Goal-requirement alignment
 
 - **Orphan requirements** serving no stated goal (scope creep signal)
 - **Unserved goals** that no requirement addresses (incomplete planning)
 - **Weak links** that nominally connect but wouldn't move the needle
 
-### 4. Prioritization coherence
+### 5. Prioritization coherence
 
 If priority tiers exist: do assignments match stated goals? Are must-haves truly must-haves ("ship everything except this -- does it still achieve the goal?")? Do P0s depend on P2s?
 
