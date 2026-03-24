@@ -21,24 +21,29 @@ Agents are organized into categories for easier discovery.
 | `agent-native-reviewer` | Verify features are agent-native (action + context parity) |
 | `architecture-strategist` | Analyze architectural decisions and compliance |
 | `code-simplicity-reviewer` | Final pass for simplicity and minimalism |
-| `coherence-reviewer` | Review documents for internal consistency, contradictions, and terminology drift |
 | `data-integrity-guardian` | Database migrations and data integrity |
 | `data-migration-expert` | Validate ID mappings match production, check for swapped values |
 | `deployment-verification-agent` | Create Go/No-Go deployment checklists for risky data changes |
-| `design-lens-reviewer` | Review plans for missing design decisions, interaction states, and AI slop risk |
 | `dhh-rails-reviewer` | Rails review from DHH's perspective |
-| `feasibility-reviewer` | Evaluate whether proposed technical approaches will survive contact with reality |
 | `julik-frontend-races-reviewer` | Review JavaScript/Stimulus code for race conditions |
 | `kieran-rails-reviewer` | Rails code review with strict conventions |
 | `kieran-python-reviewer` | Python code review with strict conventions |
 | `kieran-typescript-reviewer` | TypeScript code review with strict conventions |
 | `pattern-recognition-specialist` | Analyze code for patterns and anti-patterns |
 | `performance-oracle` | Performance analysis and optimization |
-| `product-lens-reviewer` | Challenge problem framing, evaluate scope decisions, surface goal misalignment |
 | `schema-drift-detector` | Detect unrelated schema.rb changes in PRs |
+| `security-sentinel` | Security audits and vulnerability assessments |
+
+### Document Review
+
+| Agent | Description |
+|-------|-------------|
+| `coherence-reviewer` | Review documents for internal consistency, contradictions, and terminology drift |
+| `design-lens-reviewer` | Review plans for missing design decisions, interaction states, and AI slop risk |
+| `feasibility-reviewer` | Evaluate whether proposed technical approaches will survive contact with reality |
+| `product-lens-reviewer` | Challenge problem framing, evaluate scope decisions, surface goal misalignment |
 | `scope-guardian-reviewer` | Challenge unjustified complexity, scope creep, and premature abstractions |
 | `security-lens-reviewer` | Evaluate plans for security gaps at the plan level (auth, data, APIs) |
-| `security-sentinel` | Security audits and vulnerability assessments |
 
 ### Research
 
