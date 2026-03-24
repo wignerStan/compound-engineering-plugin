@@ -160,8 +160,10 @@ if [ -z "$PR_BASE_REF" ]; then
     git fetch --no-tags "$PR_BASE_REMOTE" <base>:refs/remotes/"$PR_BASE_REMOTE"/<base> 2>/dev/null || git fetch --no-tags "$PR_BASE_REMOTE" <base> 2>/dev/null || true
     PR_BASE_REF=$(git rev-parse --verify "$PR_BASE_REMOTE_REF" 2>/dev/null || git rev-parse --verify <base> 2>/dev/null || true)
   else
-    git fetch --no-tags https://github.com/<base-repo>.git <base> 2>/dev/null || true
-    PR_BASE_REF=$(git rev-parse --verify FETCH_HEAD 2>/dev/null || git rev-parse --verify <base> 2>/dev/null || true)
+    if git fetch --no-tags https://github.com/<base-repo>.git <base> 2>/dev/null; then
+      PR_BASE_REF=$(git rev-parse --verify FETCH_HEAD 2>/dev/null || true)
+    fi
+    if [ -z "$PR_BASE_REF" ]; then PR_BASE_REF=$(git rev-parse --verify <base> 2>/dev/null || true); fi
   fi
 fi
 if [ -n "$PR_BASE_REF" ]; then BASE=$(git merge-base HEAD "$PR_BASE_REF" 2>/dev/null) || BASE=""; else BASE=""; fi
@@ -191,11 +193,18 @@ If the output is non-empty, inform the user: "You have uncommitted changes on th
 git checkout <branch>
 ```
 
-Then detect the review base branch before computing the merge-base. Prefer the checked-out branch's open PR base when one exists, then `origin/HEAD`, then GitHub metadata when available, then common fallbacks:
+Then detect the review base branch before computing the merge-base. When the branch has an open PR, resolve the base ref from the PR's actual base repository (not just `origin`), mirroring the PR-mode logic for fork safety. Fall back to `origin/HEAD`, GitHub metadata, then common branch names:
 
 ```
 REVIEW_BASE_BRANCH=""
-if command -v gh >/dev/null 2>&1; then REVIEW_BASE_BRANCH=$(gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null); fi
+PR_BASE_REPO=""
+if command -v gh >/dev/null 2>&1; then
+  PR_META=$(gh pr view --json baseRefName,url 2>/dev/null || true)
+  if [ -n "$PR_META" ]; then
+    REVIEW_BASE_BRANCH=$(echo "$PR_META" | jq -r '.baseRefName // empty')
+    PR_BASE_REPO=$(echo "$PR_META" | jq -r '.url // empty' | sed -n 's#https://github.com/\([^/]*/[^/]*\)/pull/.*#\1#p')
+  fi
+fi
 if [ -z "$REVIEW_BASE_BRANCH" ]; then REVIEW_BASE_BRANCH=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'); fi
 if [ -z "$REVIEW_BASE_BRANCH" ] && command -v gh >/dev/null 2>&1; then REVIEW_BASE_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null); fi
 if [ -z "$REVIEW_BASE_BRANCH" ]; then
@@ -206,25 +215,42 @@ if [ -z "$REVIEW_BASE_BRANCH" ]; then
     fi
   done
 fi
-if [ -n "$REVIEW_BASE_BRANCH" ] && ! git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 && ! git rev-parse --verify "$REVIEW_BASE_BRANCH" >/dev/null 2>&1; then
-  git fetch --no-tags origin "$REVIEW_BASE_BRANCH:refs/remotes/origin/$REVIEW_BASE_BRANCH" 2>/dev/null || git fetch --no-tags origin "$REVIEW_BASE_BRANCH" 2>/dev/null || true
-fi
-if [ -n "$REVIEW_BASE_BRANCH" ]; then BASE=$(git merge-base HEAD $(git rev-parse --verify origin/$REVIEW_BASE_BRANCH 2>/dev/null || git rev-parse --verify $REVIEW_BASE_BRANCH 2>/dev/null) 2>/dev/null) || BASE=""; else BASE=""; fi
+if [ -n "$REVIEW_BASE_BRANCH" ]; then
+  if [ -n "$PR_BASE_REPO" ]; then
+    PR_BASE_REMOTE=$(git remote -v | awk "index(\$2, \"github.com:$PR_BASE_REPO\") || index(\$2, \"github.com/$PR_BASE_REPO\") {print \$1; exit}")
+    if [ -n "$PR_BASE_REMOTE" ]; then
+      git rev-parse --verify "$PR_BASE_REMOTE/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 || git fetch --no-tags "$PR_BASE_REMOTE" "$REVIEW_BASE_BRANCH" 2>/dev/null || true
+      BASE_REF=$(git rev-parse --verify "$PR_BASE_REMOTE/$REVIEW_BASE_BRANCH" 2>/dev/null || true)
+    fi
+  fi
+  if [ -z "$BASE_REF" ]; then
+    git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 || git fetch --no-tags origin "$REVIEW_BASE_BRANCH" 2>/dev/null || true
+    BASE_REF=$(git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" 2>/dev/null || git rev-parse --verify "$REVIEW_BASE_BRANCH" 2>/dev/null || true)
+  fi
+  if [ -n "$BASE_REF" ]; then BASE=$(git merge-base HEAD "$BASE_REF" 2>/dev/null) || BASE=""; else BASE=""; fi
+else BASE=""; fi
 ```
 
 ```
 if [ -n "$BASE" ]; then echo "BASE:$BASE" && echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE; elif git rev-parse HEAD >/dev/null 2>&1; then echo "BASE:none" && echo "FILES:" && git diff --name-only HEAD && echo "DIFF:" && git diff -U10 HEAD; else echo "BASE:none" && echo "FILES:" && git diff --cached --name-only && echo "DIFF:" && git diff --cached -U10; fi && echo "UNTRACKED:" && git ls-files --others --exclude-standard
 ```
 
-If the branch also has an open PR, the base branch detection above should already use that PR's `baseRefName` for diff scope. You may still fetch additional PR metadata with `gh pr view` for title, body, and linked issues, but do not fail if no PR exists.
+If the branch has an open PR, the detection above uses the PR's base repository to resolve the merge-base, which handles fork workflows correctly. You may still fetch additional PR metadata with `gh pr view` for title, body, and linked issues, but do not fail if no PR exists.
 
 **If no argument (standalone on current branch):**
 
-Detect the review base branch before computing the merge-base. Prefer the current branch's open PR base when one exists, then `origin/HEAD`, then GitHub metadata when available, then common fallbacks:
+Detect the review base branch before computing the merge-base. When the current branch has an open PR, resolve the base ref from the PR's actual base repository (not just `origin`), mirroring the PR-mode logic for fork safety. Fall back to `origin/HEAD`, GitHub metadata, then common branch names:
 
 ```
 REVIEW_BASE_BRANCH=""
-if command -v gh >/dev/null 2>&1; then REVIEW_BASE_BRANCH=$(gh pr view --json baseRefName --jq '.baseRefName' 2>/dev/null); fi
+PR_BASE_REPO=""
+if command -v gh >/dev/null 2>&1; then
+  PR_META=$(gh pr view --json baseRefName,url 2>/dev/null || true)
+  if [ -n "$PR_META" ]; then
+    REVIEW_BASE_BRANCH=$(echo "$PR_META" | jq -r '.baseRefName // empty')
+    PR_BASE_REPO=$(echo "$PR_META" | jq -r '.url // empty' | sed -n 's#https://github.com/\([^/]*/[^/]*\)/pull/.*#\1#p')
+  fi
+fi
 if [ -z "$REVIEW_BASE_BRANCH" ]; then REVIEW_BASE_BRANCH=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's#^origin/##'); fi
 if [ -z "$REVIEW_BASE_BRANCH" ] && command -v gh >/dev/null 2>&1; then REVIEW_BASE_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name' 2>/dev/null); fi
 if [ -z "$REVIEW_BASE_BRANCH" ]; then
@@ -235,10 +261,20 @@ if [ -z "$REVIEW_BASE_BRANCH" ]; then
     fi
   done
 fi
-if [ -n "$REVIEW_BASE_BRANCH" ] && ! git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 && ! git rev-parse --verify "$REVIEW_BASE_BRANCH" >/dev/null 2>&1; then
-  git fetch --no-tags origin "$REVIEW_BASE_BRANCH:refs/remotes/origin/$REVIEW_BASE_BRANCH" 2>/dev/null || git fetch --no-tags origin "$REVIEW_BASE_BRANCH" 2>/dev/null || true
-fi
-if [ -n "$REVIEW_BASE_BRANCH" ]; then BASE=$(git merge-base HEAD $(git rev-parse --verify origin/$REVIEW_BASE_BRANCH 2>/dev/null || git rev-parse --verify $REVIEW_BASE_BRANCH 2>/dev/null) 2>/dev/null) || BASE=""; else BASE=""; fi
+if [ -n "$REVIEW_BASE_BRANCH" ]; then
+  if [ -n "$PR_BASE_REPO" ]; then
+    PR_BASE_REMOTE=$(git remote -v | awk "index(\$2, \"github.com:$PR_BASE_REPO\") || index(\$2, \"github.com/$PR_BASE_REPO\") {print \$1; exit}")
+    if [ -n "$PR_BASE_REMOTE" ]; then
+      git rev-parse --verify "$PR_BASE_REMOTE/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 || git fetch --no-tags "$PR_BASE_REMOTE" "$REVIEW_BASE_BRANCH" 2>/dev/null || true
+      BASE_REF=$(git rev-parse --verify "$PR_BASE_REMOTE/$REVIEW_BASE_BRANCH" 2>/dev/null || true)
+    fi
+  fi
+  if [ -z "$BASE_REF" ]; then
+    git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" >/dev/null 2>&1 || git fetch --no-tags origin "$REVIEW_BASE_BRANCH" 2>/dev/null || true
+    BASE_REF=$(git rev-parse --verify "origin/$REVIEW_BASE_BRANCH" 2>/dev/null || git rev-parse --verify "$REVIEW_BASE_BRANCH" 2>/dev/null || true)
+  fi
+  if [ -n "$BASE_REF" ]; then BASE=$(git merge-base HEAD "$BASE_REF" 2>/dev/null) || BASE=""; else BASE=""; fi
+else BASE=""; fi
 ```
 
 ```
