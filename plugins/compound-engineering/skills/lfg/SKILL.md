@@ -133,9 +133,11 @@ Late-stage rule:
 
    After the plan exists, update `artifacts.plan_doc` in the autopilot manifest with that exact plan path. Use that same path for every later `deepen-plan` and `ce:work` invocation in this run.
 
-4. If the recomputed first unmet gate is still `plan`, **conditionally** run `/compound-engineering:deepen-plan [ce-autopilot manifest=.context/compound-engineering/autopilot/<run-id>/session.json] :: <plan-path-from-artifacts.plan_doc>`
+4. After the plan exists, evaluate whether `deepen-plan` should run using the written plan at `artifacts.plan_doc`. Do not gate this check on the first unmet gate still being `plan`; `ce:plan` may already have advanced the manifest to `implementation`.
 
    Run only if the plan is `Standard` or `Deep`, touches a high-risk area (auth, security, payments, migrations, external APIs, significant rollout concerns), or still has obvious confidence gaps in decisions, sequencing, system-wide impact, risks, or verification.
+
+   If those criteria are met, run `/compound-engineering:deepen-plan [ce-autopilot manifest=.context/compound-engineering/autopilot/<run-id>/session.json] :: <plan-path-from-artifacts.plan_doc>`.
 
    GATE: If deepen-plan ran, confirm the plan was deepened or judged sufficiently grounded. If skipped, briefly note why and proceed.
 

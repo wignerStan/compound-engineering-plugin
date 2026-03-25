@@ -27,6 +27,7 @@ describe("autopilot skill contract", () => {
     expect(lfg).toContain("After each downstream skill returns, update the manifest evidence, recompute the first unmet gate")
     expect(lfg).toContain("update `artifacts.plan_doc` in the autopilot manifest")
     expect(lfg).toContain("<plan-path-from-artifacts.plan_doc>")
+    expect(lfg).toContain("Do not gate this check on the first unmet gate still being `plan`")
     expect(lfg).toContain("If the run is only waiting on external CI, report that explicitly instead of claiming completion.")
 
     expect(slfg).toContain("[DEPRECATED] Compatibility wrapper")
