@@ -189,7 +189,7 @@ Run a complete engineering workflow from feature description to PR:
 | Command | Description |
 |---------|-------------|
 | `/lfg [description]` | Right-sized autopilot workflow: routes to direct edit, lightweight execution, or the full pipeline based on task complexity |
-| `/slfg [description]` | Same autopilot routing with parallel execution via swarm mode for standard/complex tasks |
+| `/slfg [description]` | Deprecated wrapper -- routes to `/lfg` with swarm mode enabled |
 
 ```
 /lfg fix the typo on line 42 of foo.ts          # → Direct: fixes it, verifies it, opens/updates the PR
@@ -197,7 +197,7 @@ Run a complete engineering workflow from feature description to PR:
 /lfg add dark mode support to the settings page  # → Full pipeline in autopilot mode: brainstorm → plan → work → review → test → video
 ```
 
-Both assess task complexity and choose the right amount of ceremony while preserving the branch/commit/PR lifecycle. Complex work runs the full pipeline in autopilot mode. `/slfg` parallelizes where possible using swarm agents.
+`/lfg` assesses task complexity and chooses the right amount of ceremony while preserving the branch/commit/PR lifecycle. Complex work runs the full pipeline in autopilot mode. `/slfg` is a deprecated compatibility wrapper that routes to `/lfg` with swarm mode enabled.
 
 ### Step-by-step
 

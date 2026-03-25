@@ -204,7 +204,7 @@ Return "Review complete" as the terminal signal for callers.
 - Do not add new sections or requirements the user didn't discuss
 - Do not over-engineer or add complexity
 - Do not create separate review files or add metadata sections
-- Do not modify any of the 4 caller skills (ce-brainstorm, ce-plan, ce-plan-beta, deepen-plan-beta)
+- Do not modify any of the caller skills (ce-brainstorm, ce-plan, deepen-plan)
  - Do not resolve substantive product or implementation questions on behalf of an autopilot caller
 
 ## Iteration Guidance

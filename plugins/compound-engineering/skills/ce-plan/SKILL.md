@@ -74,7 +74,7 @@ Orchestration bias:
 Normal mode uses this rubric to recommend planning choices.
 Autopilot mode uses the same rubric for bounded technical or plan-structure decisions only.
 
-## Autopilot Contract
+## Autopilot Mode
 
 Autopilot is active only when the input begins with:
 
