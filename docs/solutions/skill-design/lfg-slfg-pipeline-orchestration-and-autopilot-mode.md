@@ -13,9 +13,32 @@ tags:
   - ce-plan
   - skill-chaining
   - autonomous-workflow
+related:
+  - docs/solutions/skill-design/lfg-autopilot-orchestration-and-resumability.md
 ---
 
 # Collapsing `slfg` into `lfg` and Making Autopilot Explicit
+
+## Scope Note
+
+This doc captures the first durable orchestration shift:
+
+- collapse `slfg` into `lfg`
+- stop inferring autopilot from caller prose
+- make swarm an implementation-mode choice instead of a separate top-level workflow
+
+That learning is still correct, but it is no longer the whole contract.
+
+The current runtime model also depends on:
+
+- a resumable manifest
+- route-aware resume logic (`direct | lightweight | full`)
+- explicit gate ownership across downstream skills
+- stale late-stage invalidation for review / verification / wrap-up
+
+For the current end-to-end runtime model, see:
+
+- [How lfg autopilot orchestration, resumability, and the manifest contract work](./lfg-autopilot-orchestration-and-resumability.md)
 
 ## Problem
 
@@ -57,6 +80,12 @@ This lets `lfg` do two things the old model could not do well:
 
 - resume from the first unmet workflow gate instead of assuming every run starts at ideation
 - choose behavior from actual execution context (manifest state, implementation mode, current gate) rather than from the name of the top-level command
+
+The current contract goes further than the original `lfg`/`slfg` collapse:
+
+- direct and lightweight routes also create manifests
+- the manifest is validated and repaired on resume instead of being blindly trusted
+- later gates are kept explicit so an open PR does not masquerade as "done"
 
 ## Key Design Decisions
 
