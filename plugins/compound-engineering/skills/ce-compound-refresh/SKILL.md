@@ -95,7 +95,7 @@ Exclude:
 - `README.md`
 - `docs/solutions/_archived/` (legacy — if this directory exists, flag it for cleanup in the report)
 
-Find all `.md` files under `docs/solutions/`, excluding `README.md` files. If an `_archived/` directory exists, note it in the report as a legacy artifact that should be cleaned up (files either restored or deleted).
+Find all `.md` files under `docs/solutions/`, excluding `README.md` files and anything under `_archived/`. If an `_archived/` directory exists, note it in the report as a legacy artifact that should be cleaned up (files either restored or deleted).
 
 If `$ARGUMENTS` is provided, use it to narrow scope before proceeding. Try these matching strategies in order, stopping at the first that produces results:
 
@@ -576,7 +576,7 @@ If all writes succeed, the Recommended section is empty. If no writes succeed (e
 
 ## Phase 5: Commit Changes
 
-After all actions are executed and the report is generated, handle committing the changes. Skip this phase if no files were modified (all Keep, or all writes failed, or only deletions which leave nothing to commit besides the deletions themselves).
+After all actions are executed and the report is generated, handle committing the changes. Skip this phase if no files were modified (all Keep, or all writes failed).
 
 ### Detect git context
 
