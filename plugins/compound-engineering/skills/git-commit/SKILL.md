@@ -22,6 +22,8 @@ command git log --oneline -10
 
 If there are no changes (nothing staged, nothing modified), report that and stop.
 
+If the current branch is `main`, `master`, or the repo's default branch, warn the user and ask whether to continue committing here or create a feature branch first. Use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). If no question tool is available, present the options and wait for the user's reply before proceeding. If the user chooses to create a branch, derive the name from the change content and switch to it before continuing.
+
 ### Step 2: Determine commit message convention
 
 Follow this priority order:
