@@ -554,14 +554,14 @@ async function detectScripts() {
     }
   }
 
-  // Makefile targets
+  // Makefile targets -- always include alongside npm scripts for polyglot repos
   const makefile = await readText(join(root, "Makefile"));
-  if (makefile && !pkg?.scripts) {
+  if (makefile) {
     const targets = makefile.match(/^([a-zA-Z_][\w-]*)\s*:/gm);
     if (targets) {
       for (const t of targets.slice(0, 15)) {
         const name = t.replace(":", "").trim();
-        scripts[`make ${name}`] = "(Makefile target)";
+        if (!scripts[`make ${name}`]) scripts[`make ${name}`] = "(Makefile target)";
       }
     }
   }
