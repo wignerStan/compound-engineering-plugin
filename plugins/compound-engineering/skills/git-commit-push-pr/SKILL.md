@@ -1,13 +1,72 @@
 ---
 name: git-commit-push-pr
-description: Commit, push, and open a PR with an adaptive, value-first description. Use when the user says "commit and PR", "push and open a PR", "ship this", "create a PR", "open a pull request", "commit push PR", or wants to go from working changes to an open pull request in one step. Produces PR descriptions that scale in depth with the complexity of the change, avoiding cookie-cutter templates.
+description: Commit, push, and open a PR with an adaptive, value-first description. Use when the user says "commit and PR", "push and open a PR", "ship this", "create a PR", "open a pull request", "commit push PR", or wants to go from working changes to an open pull request in one step. Also use when the user says "update the PR description", "refresh the PR description", "freshen the PR", or wants to rewrite an existing PR description. Produces PR descriptions that scale in depth with the complexity of the change, avoiding cookie-cutter templates.
 ---
 
 # Git Commit, Push, and PR
 
-Go from working tree changes to an open pull request in a single workflow. The key differentiator of this skill is PR descriptions that communicate *value and intent* proportional to the complexity of the change.
+Go from working tree changes to an open pull request in a single workflow, or update an existing PR description. The key differentiator of this skill is PR descriptions that communicate *value and intent* proportional to the complexity of the change.
 
-## Workflow
+## Mode detection
+
+If the user is asking to update, refresh, or rewrite an existing PR description (with no mention of committing or pushing), this is a **description-only update**. The user may also provide a focus for the update (e.g., "update the PR description and add the benchmarking results"). Note any focus instructions for use in DU-3.
+
+For description-only updates, follow the Description Update workflow below. Otherwise, follow the full workflow.
+
+---
+
+## Description Update workflow
+
+### DU-1: Confirm intent
+
+Ask the user to confirm: "Update the PR description for this branch?" Use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). If no question tool is available, present the question and wait for the user's reply.
+
+If the user declines, stop.
+
+### DU-2: Find the PR
+
+Run these commands to identify the branch and locate the PR:
+
+```bash
+git branch --show-current
+```
+
+If empty (detached HEAD), report that there is no branch to update and stop.
+
+Otherwise, check for an existing open PR:
+
+```bash
+gh pr list --head "<branch>" --json url,title,state --jq '.[0] // empty'
+```
+
+If no PR is found, report that no open PR exists for this branch and stop.
+
+### DU-3: Write and apply the updated description
+
+Read the current PR description:
+
+```bash
+gh pr view --json body --jq '.body'
+```
+
+Follow the "Detect the base branch and remote" and "Gather the branch scope" sections of Step 6 to get the full branch diff. Use the PR found in DU-2 as the existing PR for base branch detection. Then write a new description following the writing principles in Step 6. If the user provided a focus, incorporate it into the description alongside the branch diff context.
+
+Compare the new description against the current one and summarize the substantial changes for the user (e.g., "Added coverage of the new caching layer, updated test plan, removed outdated migration notes"). If the user provided a focus, confirm it was addressed. Ask the user to confirm before applying. Use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). If no question tool is available, present the summary and wait for the user's reply.
+
+If confirmed, apply:
+
+```bash
+gh pr edit --body "$(cat <<'EOF'
+Updated description here
+EOF
+)"
+```
+
+Report the PR URL.
+
+---
+
+## Full workflow
 
 ### Step 1: Gather context
 
