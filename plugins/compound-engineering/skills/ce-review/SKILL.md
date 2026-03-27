@@ -234,15 +234,17 @@ git checkout <branch>
 Then detect the review base branch and compute the merge-base. Run the `references/resolve-base.sh` script, which handles fork-safe remote resolution with multi-fallback detection (PR metadata -> `origin/HEAD` -> `gh repo view` -> common branch names):
 
 ```
-bash references/resolve-base.sh
+RESOLVE_OUT=$(bash references/resolve-base.sh)
+if echo "$RESOLVE_OUT" | grep -q '^ERROR:'; then echo "$RESOLVE_OUT"; exit 1; fi
+BASE=$(echo "$RESOLVE_OUT" | sed 's/^BASE://')
 ```
 
-Parse the output to get `BASE:<sha>` or `ERROR:<message>`. If the script outputs an error, stop instead of falling back to `git diff HEAD`; a branch review without the base branch would only show uncommitted changes and silently miss all committed work.
+If the script outputs an error, stop instead of falling back to `git diff HEAD`; a branch review without the base branch would only show uncommitted changes and silently miss all committed work.
 
 On success, produce the diff:
 
 ```
-echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE && echo "UNTRACKED:" && git ls-files --others --exclude-standard
+echo "BASE:$BASE" && echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE && echo "UNTRACKED:" && git ls-files --others --exclude-standard
 ```
 
 You may still fetch additional PR metadata with `gh pr view` for title, body, and linked issues, but do not fail if no PR exists.
@@ -252,15 +254,17 @@ You may still fetch additional PR metadata with `gh pr view` for title, body, an
 Detect the review base branch and compute the merge-base using the same `references/resolve-base.sh` script as branch mode:
 
 ```
-bash references/resolve-base.sh
+RESOLVE_OUT=$(bash references/resolve-base.sh)
+if echo "$RESOLVE_OUT" | grep -q '^ERROR:'; then echo "$RESOLVE_OUT"; exit 1; fi
+BASE=$(echo "$RESOLVE_OUT" | sed 's/^BASE://')
 ```
 
-Parse the output to get `BASE:<sha>` or `ERROR:<message>`. If the script outputs an error, stop instead of falling back to `git diff HEAD`; a standalone review without the base branch would only show uncommitted changes and silently miss all committed work on the branch.
+If the script outputs an error, stop instead of falling back to `git diff HEAD`; a standalone review without the base branch would only show uncommitted changes and silently miss all committed work on the branch.
 
 On success, produce the diff:
 
 ```
-echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE && echo "UNTRACKED:" && git ls-files --others --exclude-standard
+echo "BASE:$BASE" && echo "FILES:" && git diff --name-only $BASE && echo "DIFF:" && git diff -U10 $BASE && echo "UNTRACKED:" && git ls-files --others --exclude-standard
 ```
 
 Using `git diff $BASE` (without `..HEAD`) diffs the merge-base against the working tree, which includes committed, staged, and unstaged changes together.

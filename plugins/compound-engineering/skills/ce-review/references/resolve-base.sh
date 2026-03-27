@@ -21,8 +21,8 @@ BASE_REF=""
 if command -v gh >/dev/null 2>&1; then
   PR_META=$(gh pr view --json baseRefName,url 2>/dev/null || true)
   if [ -n "$PR_META" ]; then
-    REVIEW_BASE_BRANCH=$(echo "$PR_META" | jq -r '.baseRefName // empty')
-    PR_BASE_REPO=$(echo "$PR_META" | jq -r '.url // empty' | sed -n 's#https://github.com/\([^/]*/[^/]*\)/pull/.*#\1#p')
+    REVIEW_BASE_BRANCH=$(echo "$PR_META" | jq -r '.baseRefName // empty' 2>/dev/null || true)
+    PR_BASE_REPO=$(echo "$PR_META" | jq -r '.url // empty' 2>/dev/null | sed -n 's#https://github.com/\([^/]*/[^/]*\)/pull/.*#\1#p' || true)
   fi
 fi
 
