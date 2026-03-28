@@ -472,7 +472,8 @@ Advisory findings (report-only):
   Why: <why_it_matters>
 
 Pre-existing issues:
-- <file:line> -- <title> (<reviewer>)
+[P2] File: <file:line> -- <title> (<reviewer>, confidence <N>)
+  Why: <why_it_matters>
 
 Residual risks:
 - <risk>
