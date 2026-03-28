@@ -121,6 +121,7 @@ Fingerprint each finding using `normalize(section) + normalize(title)`. Normaliz
 When fingerprints match across personas:
 - If the findings recommend **opposing actions** (e.g., one says cut, the other says keep), do not merge -- preserve both for contradiction resolution in 3.5
 - Otherwise merge: keep the highest severity, keep the highest confidence, union all evidence arrays, note all agreeing reviewers (e.g., "coherence, feasibility")
+- **Coverage attribution:** Attribute the merged finding to the persona with the highest confidence. The other persona's finding count decreases by one for Coverage table purposes.
 
 ### 3.4 Promote Residual Concerns
 
@@ -143,15 +144,17 @@ Specific conflict patterns:
 
 ### 3.6 Route by Autofix Class
 
+**Severity and autofix_class are independent.** A P1 finding can be `auto` if the correct fix is deterministic. The test is not "how important?" but "can the fix be derived from the document's own content without judgment?"
+
 | Autofix Class | Route |
 |---------------|-------|
-| `auto` | Apply automatically -- local deterministic fix (terminology, formatting, cross-references, completeness corrections where the correct value is verifiable from the document itself) |
-| `batch_confirm` | Group for single batch approval -- obvious fixes that touch meaning but have one clear correct answer |
+| `auto` | Apply automatically -- fix is derivable from the document itself. One part of the document is clearly authoritative over another; reconcile toward the authority. |
+| `batch_confirm` | Group for single batch approval -- one clear correct answer, but authors new content where exact wording needs verification |
 | `present` | Present individually for user judgment |
 
 Demote any `auto` finding that lacks a `suggested_fix` to `batch_confirm`. Demote any `batch_confirm` finding that lacks a `suggested_fix` to `present`.
 
-**Completeness corrections eligible for `auto`:** A finding qualifies when the correct fix is deterministically derivable from other content in the document. Examples: a count says "6 units" but the document lists 7, a summary omits an item that appears in the detailed list, a cross-reference points to a renamed section. If the fix requires judgment about *what* to add (not just *that* something is missing), it belongs in `batch_confirm` or `present`.
+**Auto-eligible patterns:** summary/detail mismatch (body is authoritative over overview), wrong counts, missing list entries derivable from elsewhere in the document, stale internal cross-references, terminology drift, prose/diagram contradictions where prose is more detailed. If the fix requires judgment about *what* to write (not just *that* something needs updating), it belongs in `batch_confirm` or `present`.
 
 ### 3.7 Sort
 
@@ -168,12 +171,19 @@ Apply all `auto` findings to the document in a **single pass**:
 
 ### Batch Confirm
 
-If any `batch_confirm` findings exist, present them as a group for a single approval:
-- List the proposed fixes in a numbered table
-- Use the platform's blocking question tool (AskUserQuestion in Claude Code, request_user_input in Codex, ask_user in Gemini) to ask: "Apply these N fixes? (yes/no/select)". If no blocking question tool is available, present the table with numbered options and wait for the user's reply before proceeding.
-- If approved, apply all in a single pass
-- If "select", let the user pick which to apply
-- If rejected, demote remaining to the `present` findings list
+If any `batch_confirm` findings exist:
+
+1. Present the proposed fixes in a numbered table (see template)
+2. **Ask for approval using the platform's interactive question tool** -- do not print the question as plain text output:
+   - Claude Code: `AskUserQuestion`
+   - Codex: `request_user_input`
+   - Gemini: `ask_user`
+   - Fallback (no question tool available): present numbered options and stop; wait for the user's next message before proceeding
+3. Question text: "Apply these N fixes? (yes/no/select)"
+4. Handle the response:
+   - **yes**: Apply all in a single pass
+   - **select**: Let the user pick which to apply
+   - **no**: Demote remaining to the `present` findings list
 
 This turns N obvious-but-meaning-touching fixes into 1 interaction instead of N.
 
@@ -198,7 +208,11 @@ These are pipeline artifacts and must not be flagged for removal.
 
 ## Phase 5: Next Action
 
-Use the platform's blocking question tool when available (AskUserQuestion in Claude Code, request_user_input in Codex, ask_user in Gemini). Otherwise present numbered options and wait for the user's reply.
+**Ask using the platform's interactive question tool** -- do not print the question as plain text output:
+- Claude Code: `AskUserQuestion`
+- Codex: `request_user_input`
+- Gemini: `ask_user`
+- Fallback (no question tool available): present numbered options and stop; wait for the user's next message
 
 Offer:
 

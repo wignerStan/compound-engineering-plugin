@@ -94,4 +94,4 @@ These fixes have one clear correct answer but touch document meaning. Apply all?
 - **P0-P3 sections**: Only include sections that have findings. Omit empty severity levels. Within each severity, separate into **Errors** and **Omissions** sub-headers. Omit a sub-header if that severity has none of that type.
 - **Residual Concerns**: Findings below confidence threshold that were promoted by cross-persona corroboration, plus unpromoted residual risks. Omit if none.
 - **Deferred Questions**: Questions for later workflow stages. Omit if none.
-- **Coverage**: Always include. Shows which personas ran and their output counts broken down by route (Auto, Batch, Present).
+- **Coverage**: Always include. All counts are **post-synthesis**. **Findings** must equal Auto + Batch + Present exactly -- if deduplication merged a finding across personas, attribute it to the persona with the highest confidence and reduce the other persona's count. **Residual** = count of `residual_risks` from this persona's raw output (not the promoted subset in the Residual Concerns section).

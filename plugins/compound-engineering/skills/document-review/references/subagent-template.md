@@ -25,10 +25,17 @@ Rules:
 - Set `finding_type` for every finding:
   - `error`: Something the document says that is wrong -- contradictions, incorrect statements, design tensions, incoherent tradeoffs.
   - `omission`: Something the document forgot to say -- missing mechanical steps, absent list entries, undefined thresholds, forgotten cross-references.
-- Set `autofix_class` conservatively:
-  - `auto`: Deterministic fixes where the correct value is verifiable from the document itself -- terminology corrections, formatting fixes, cross-reference repairs, wrong counts, missing list entries where the correct entry exists elsewhere in the document. The fix must be unambiguous.
-  - `batch_confirm`: Obvious fix with one clear correct answer, but it touches document meaning. Examples: adding a missing implementation step that is mechanically implied by other content, updating a summary to match its own details. Use when reasonable people would agree on the fix but it goes beyond cosmetic correction.
-  - `present`: Everything else -- strategic questions, tradeoffs, design tensions where reasonable people could disagree, informational findings.
+- Set `autofix_class` based on determinism, not severity. A P1 finding can be `auto` if the correct fix is derivable from the document itself:
+  - `auto`: The correct fix is derivable from the document's own content without judgment about what to write. The test: is one part of the document clearly authoritative over another? If yes, reconcile toward the authority. Examples:
+    - Summary/detail mismatch: overview says "3 phases" but body describes 4 in detail -- update the summary
+    - Wrong count: "the following 3 steps" but 4 are listed -- fix the count
+    - Missing list entry where the correct entry exists elsewhere in the document
+    - Stale internal reference: "as described in Phase 3" but content moved to Phase 4 -- fix the pointer
+    - Terminology drift: document uses both "pipeline" and "workflow" for the same concept -- standardize to the more frequent term
+    - Prose/diagram contradiction where prose is more detailed and authoritative -- update the diagram description to match
+    Always include `suggested_fix` for auto findings.
+  - `batch_confirm`: One clear correct answer, but it authors new content where exact wording needs verification. The test: would reasonable people agree on WHAT to fix but potentially disagree on the exact PHRASING? Examples: adding a missing implementation step that is mechanically implied by other content, defining a threshold that is implied but never stated explicitly. Always include `suggested_fix` for batch_confirm findings.
+  - `present`: Requires judgment -- strategic questions, tradeoffs, design tensions where reasonable people could disagree, findings where the right action is unclear.
 - `suggested_fix` is optional. Only include it when the fix is obvious and correct. For `present` findings, frame as a question instead.
 - If you find no issues, return an empty findings array. Still populate residual_risks and deferred_questions if applicable.
 - Use your suppress conditions. Do not flag issues that belong to other personas.
