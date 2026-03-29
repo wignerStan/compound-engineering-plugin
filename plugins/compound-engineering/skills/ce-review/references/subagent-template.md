@@ -49,7 +49,12 @@ Rules:
 - Set `requires_verification` to true whenever the likely fix needs targeted tests, a focused re-review, or operational validation before it should be trusted.
 - suggested_fix is optional. Only include it when the fix is obvious and correct. A bad suggestion is worse than none.
 - If you find no issues, return an empty findings array. Still populate residual_risks and testing_gaps if applicable.
+- **Intent verification:** Compare the code changes against the stated intent (and PR title/body when available). If the code does something the intent does not describe, or fails to do something the intent promises, flag it as a finding. Mismatches between stated intent and actual code are high-value findings.
 </output-contract>
+
+<pr-context>
+{pr_metadata}
+</pr-context>
 
 <review-context>
 Intent: {intent_summary}
@@ -69,5 +74,6 @@ Diff:
 | `{diff_scope_rules}` | `references/diff-scope.md` content | Primary/secondary/pre-existing tier rules |
 | `{schema}` | `references/findings-schema.json` content | The JSON schema reviewers must conform to |
 | `{intent_summary}` | Stage 2 output | 2-3 line description of what the change is trying to accomplish |
+| `{pr_metadata}` | Stage 1 output | PR title, body, and URL when reviewing a PR. Empty string when reviewing a branch or standalone checkout |
 | `{file_list}` | Stage 1 output | List of changed files from the scope step |
 | `{diff}` | Stage 1 output | The actual diff content to review |
