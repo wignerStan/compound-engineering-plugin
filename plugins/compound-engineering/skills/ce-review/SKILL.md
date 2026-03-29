@@ -1,7 +1,7 @@
 ---
 name: ce:review
 description: "Structured code review using tiered persona agents, confidence-gated findings, and a merge/dedup pipeline. Use when reviewing code changes before creating a PR."
-argument-hint: "[mode:autofix|mode:report-only|mode:headless] [PR number, GitHub URL, or branch name]"
+argument-hint: "[blank to review current branch, or provide PR link]"
 ---
 
 # Code Review
