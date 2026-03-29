@@ -590,7 +590,7 @@ Before finalizing, check:
 - If test-first or characterization-first posture was explicit or strongly implied, the relevant units carry it forward with a lightweight `Execution note`
 - Each feature-bearing unit has test scenarios from every applicable category (happy path, edge cases, error paths, integration) — right-sized to the unit's complexity, not padded or skimped
 - Test scenarios name specific inputs, actions, and expected outcomes without becoming test code
-- Feature-bearing units with blank or missing test scenarios are flagged as incomplete — every feature-bearing unit needs either test scenarios or an explicit `Test expectation: none -- [reason]` annotation
+- Feature-bearing units with blank or missing test scenarios are flagged as incomplete — feature-bearing units must have actual test scenarios, not just an annotation. The `Test expectation: none -- [reason]` annotation is only valid for non-feature-bearing units (pure config, scaffolding, styling)
 - Deferred items are explicit and not hidden as fake certainty
 - If a High-Level Technical Design section is included, it uses the right medium for the work, carries the non-prescriptive framing, and does not contain implementation code (no imports, exact signatures, or framework-specific syntax)
 - Per-unit technical design fields, if present, are concise and directional rather than copy-paste-ready
@@ -716,7 +716,7 @@ If the plan already has a `deepened:` date:
 - Units are too large, too vague, or broken into micro-steps
 - Approach notes are thin or do not name the pattern to follow
 - Test scenarios are vague (don't name inputs and expected outcomes), skip applicable categories (e.g., no error paths for a unit with failure modes, no integration scenarios for a unit crossing layers), or are disproportionate to the unit's complexity
-- Feature-bearing units have blank or missing test scenarios without an explicit `Test expectation: none -- [reason]` annotation
+- Feature-bearing units have blank or missing test scenarios (feature-bearing units require actual test scenarios; the `Test expectation: none` annotation is only valid for non-feature-bearing units)
 - Verification outcomes are vague or not expressed as observable results
 
 **System-Wide Impact**
