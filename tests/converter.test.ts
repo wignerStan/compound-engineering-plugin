@@ -481,4 +481,14 @@ describe("transformSkillContentForOpenCode", () => {
     // Without the lookahead, this would become `c:d` — a broken partial rewrite
     expect(transformSkillContentForOpenCode(input)).toBe(input)
   })
+
+  test("preserves 3-segment slash commands", () => {
+    const cases = [
+      "Run `/team:ops:deploy` to deploy.",
+      "Use /compound-engineering:review:check after changes.",
+    ]
+    for (const input of cases) {
+      expect(transformSkillContentForOpenCode(input)).toBe(input)
+    }
+  })
 })

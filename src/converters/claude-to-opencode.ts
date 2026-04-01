@@ -280,8 +280,10 @@ export function transformSkillContentForOpenCode(body: string): string {
   // Rewrite 3-segment FQ agent refs: plugin:category:agent-name -> agent-name.
   // Boundary assertions prevent partial matching on 4+ segment names
   // (e.g. `a:b:c:d` would otherwise produce `c:d` or `a:d`).
+  // The `/` in the lookbehind prevents rewriting slash commands like
+  // `/team:ops:deploy` — agent names are never preceded by `/`.
   result = result.replace(
-    /(?<![a-z0-9:-])[a-z][a-z0-9-]*:[a-z][a-z0-9-]*:([a-z][a-z0-9-]*)(?![a-z0-9:-])/g,
+    /(?<![a-z0-9:/-])[a-z][a-z0-9-]*:[a-z][a-z0-9-]*:([a-z][a-z0-9-]*)(?![a-z0-9:-])/g,
     "$1",
   )
   return result
