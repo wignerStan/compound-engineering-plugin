@@ -69,7 +69,9 @@ Moving delegation-specific content (~250 lines) from the SKILL.md body to `refer
 Sending all units (or groups of roughly 5) in a single `codex exec` call reduces orchestration from O(N) to O(ceil(N/batch_size)). For a 10-unit plan: 2 batches x ~4-5k = 8-10k orchestration vs 10 x 4-5k = 40-50k with per-unit delegation.
 
 **3. Delegate the verify/test-fix loop to Codex.**
-Include verification instructions in the prompt and let Codex own the test-fix loop. This eliminates a full orchestrator verification step per batch (~1.6k tokens saved per batch).
+In the original design, Codex wrote code and the orchestrator independently ran tests to verify. This doubled the verification cost — Claude re-ran the same tests Codex already ran, adding a tool call per batch and classification logic for "completed but verify failed" (a 6th signal in the result table). Moving verification into the delegation prompt ("run tests, fix failures, do not report completed unless tests pass") eliminates that round-trip.
+
+The safety net is the circuit breaker, not the orchestrator re-running tests. If Codex reports "completed" but the code is actually broken, the failure surfaces at one of three catch points: (1) the result schema — Codex reports "failed" or "partial" when it cannot get tests to pass, triggering rollback; (2) the circuit breaker — 3 consecutive failures disable delegation and fall back to standard mode where Claude implements with full Phase 2 testing guidance; (3) Phase 3 quality check — the full test suite runs before shipping regardless of execution mode. The orchestrator does not need to independently verify each batch because these layered catches prevent bad code from shipping. This is the key design insight: trust the delegate's self-report, protect against systematic failure with the circuit breaker, and verify the whole at the end.
 
 **4. Cache pre-delegation checks.**
 Environment guard, CLI availability, and consent checks run once before the first batch, not per-unit or per-batch. These don't change mid-execution.
