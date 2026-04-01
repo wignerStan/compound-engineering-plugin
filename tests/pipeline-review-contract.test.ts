@@ -127,83 +127,94 @@ describe("ce:work-beta codex delegation contract", () => {
     expect(content).toContain("planning and workflow handoffs remain pointed at stable `ce:work`")
   })
 
-  test("has codex delegation mode section with all subsections", async () => {
+  test("SKILL.md has delegation routing stub pointing to reference", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
 
-    // Main section
     expect(content).toContain("## Codex Delegation Mode")
-
-    // Pre-delegation checks
-    expect(content).toContain("### Pre-Delegation Checks")
-    expect(content).toContain("CODEX_SANDBOX")
-    expect(content).toContain("command -v codex")
-
-    // Prompt template
-    expect(content).toContain("### Prompt Template")
-    expect(content).toContain("<task>")
-    expect(content).toContain("<constraints>")
-    expect(content).toContain("<output_contract>")
-
-    // Result schema
-    expect(content).toContain("### Result Schema")
-    expect(content).toContain("result-schema.json")
-
-    // Execution loop
-    expect(content).toContain("### Execution Loop")
-    expect(content).toContain("codex exec")
-
-    // Circuit breaker
-    expect(content).toContain("consecutive_failures")
-    expect(content).toContain("3 consecutive failures")
+    expect(content).toContain("references/codex-delegation-workflow.md")
+    // Delegation details are NOT in SKILL.md body — they're in the reference
+    expect(content).not.toContain("### Pre-Delegation Checks")
+    expect(content).not.toContain("### Prompt Template")
+    expect(content).not.toContain("### Execution Loop")
   })
 
   test("delegation routing gate in Phase 1 Step 4", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
 
-    // Delegation gate appears before strategy table
     const gateIdx = content.indexOf("Delegation routing gate")
     const strategyTableIdx = content.indexOf("| **Inline**")
     expect(gateIdx).toBeGreaterThan(0)
     expect(gateIdx).toBeLessThan(strategyTableIdx)
+    expect(content).toContain("Codex delegation requires a plan file")
   })
 
   test("delegation branches in Phase 2 task loop", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
 
-    // Task loop has delegation branch before standard implementation
     expect(content).toContain("If delegation_active: branch to the Codex Delegation Execution Loop")
   })
 
   test("swarm mode has mutual exclusion note", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
 
-    expect(content).toContain("Mutual exclusion with delegation mode")
-    expect(content).toContain("Delegation mode and swarm mode are mutually exclusive")
+    expect(content).toContain("Mutual exclusion with Codex delegation")
+    expect(content).toContain("swarm mode are mutually exclusive")
   })
 
-  test("has clean-baseline preflight and rollback procedure", async () => {
-    const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
+  test("delegation reference has all required sections", async () => {
+    const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/references/codex-delegation-workflow.md")
 
-    expect(content).toContain("Clean-baseline preflight")
+    // Pre-delegation checks
+    expect(content).toContain("## Pre-Delegation Checks")
+    expect(content).toContain("Platform Gate")
+    expect(content).toContain("CODEX_SANDBOX")
+    expect(content).toContain("command -v codex")
+    expect(content).toContain("Consent Flow")
+
+    // Batching
+    expect(content).toContain("## Batching")
+
+    // Prompt template
+    expect(content).toContain("## Prompt Template")
+    expect(content).toContain("<task>")
+    expect(content).toContain("<constraints>")
+    expect(content).toContain("<output_contract>")
+    expect(content).toContain("the orchestrator\nwill not re-run verification independently")
+
+    // Result schema and execution loop
+    expect(content).toContain("## Result Schema")
+    expect(content).toContain("## Execution Loop")
+    expect(content).toContain("codex exec")
+
+    // Circuit breaker
+    expect(content).toContain("consecutive_failures")
+    expect(content).toContain("3 consecutive failures")
+
+    // Rollback safety
     expect(content).toContain("git diff --quiet HEAD")
     expect(content).toContain("git checkout -- .")
     expect(content).toContain("Do NOT use bare `git clean -fd` without path arguments")
+
+    // Mixed-model attribution
+    expect(content).toContain("## Mixed-Model Attribution")
   })
 
-  test("has result classification table with all categories", async () => {
-    const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
+  test("delegation reference has decision prompts for ask mode", async () => {
+    const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/references/codex-delegation-workflow.md")
 
-    expect(content).toContain("CLI failure")
-    expect(content).toContain("Task failure")
-    expect(content).toContain("Partial success")
-    expect(content).toContain("Verify failure")
-    expect(content).toContain("Success")
+    expect(content).toContain("## Delegation Decision")
+    expect(content).toContain("work_delegation_decision")
+    expect(content).toContain("Execute with Claude Code instead")
+    expect(content).toContain("Delegate to Codex anyway")
+    expect(content).toContain("the cost of delegating outweighs having Claude Code do them")
   })
 
-  test("has mixed-model attribution guidance", async () => {
+  test("settings resolution includes delegation decision setting", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
 
-    expect(content).toContain("### Mixed-Model Attribution")
+    expect(content).toContain("work_delegation_decision")
+    expect(content).toContain("`auto`")
+    expect(content).toContain("`ask`")
   })
 
   test("has frontend design guidance ported from beta", async () => {
