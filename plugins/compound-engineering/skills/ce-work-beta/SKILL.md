@@ -2,7 +2,7 @@
 name: ce:work-beta
 description: "[BETA] Execute work with external delegate support. Same as ce:work but includes experimental Codex delegation mode for token-conserving code implementation."
 disable-model-invocation: true
-argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc]"
+argument-hint: "[Plan doc path or description of work. Blank to auto use latest plan doc] [delegate:codex]"
 ---
 
 # Work Execution Command
@@ -13,9 +13,48 @@ Execute work efficiently while maintaining quality and finishing features.
 
 This command takes a work document (plan, specification, or todo file) or a bare prompt describing the work, and executes it systematically. The focus is on **shipping complete features** by understanding requirements quickly, following existing patterns, and maintaining quality throughout.
 
+**Beta rollout note:** Invoke `ce:work-beta` manually when you want to trial Codex delegation. During the beta period, planning and workflow handoffs remain pointed at stable `ce:work` to avoid dual-path orchestration complexity.
+
 ## Input Document
 
 <input_document> #$ARGUMENTS </input_document>
+
+## Argument Parsing
+
+Parse `$ARGUMENTS` for the following optional tokens. Strip each recognized token before interpreting the remainder as the plan file path or bare prompt.
+
+| Token | Example | Effect |
+|-------|---------|--------|
+| `delegate:codex` | `delegate:codex` | Activate Codex delegation mode for plan execution |
+| `delegate:local` | `delegate:local` | Deactivate delegation even if enabled in local.md |
+
+All tokens are optional. When absent, fall back to the resolution chain below.
+
+**Fuzzy activation:** Also recognize imperative delegation-intent phrases such as "use codex", "delegate to codex", "codex mode", or "delegate mode" as equivalent to `delegate:codex`. A bare mention of "codex" in a prompt (e.g., "fix codex converter bugs") must NOT activate delegation -- only clear delegation intent triggers it.
+
+**Fuzzy deactivation:** Also recognize phrases such as "no codex", "local mode", "standard mode" as equivalent to `delegate:local`.
+
+### Settings Resolution Chain
+
+After extracting tokens from arguments, resolve the delegation state using this precedence chain:
+
+1. **Argument flag** -- `delegate:codex` or `delegate:local` from the current invocation (highest priority)
+2. **local.md setting** -- Read `.claude/compound-engineering.local.md` and extract `work_delegate` from YAML frontmatter. Value `codex` activates delegation; `false` deactivates.
+3. **Hard default** -- `false` (delegation off)
+
+To read local.md: open the file, extract content between the opening and closing `---` delimiters (YAML frontmatter), and interpret the keys. If the file is missing, empty, or has malformed frontmatter, treat all settings as absent and fall through to hard defaults.
+
+Also read from local.md when present:
+- `work_codex_consent` -- `true` if the user has completed the one-time consent flow
+- `work_codex_sandbox` -- `yolo` (default) or `full-auto` -- sandbox posture for codex exec
+
+Store the resolved state for downstream consumption:
+- `delegation_active` -- boolean, whether delegation mode is on
+- `delegation_source` -- `argument` or `local.md` or `default` -- how delegation was resolved (used by environment guard to decide notification verbosity)
+- `sandbox_mode` -- `yolo` or `full-auto` (from local.md or default `yolo`)
+- `consent_granted` -- boolean (from local.md `work_codex_consent`)
+
+---
 
 ## Execution Workflow
 
@@ -126,6 +165,8 @@ Determine how to proceed based on what was provided in `<input_document>`.
 
 4. **Choose Execution Strategy**
 
+   **Delegation routing gate:** If `delegation_active` is true AND the input is a plan file (not a bare prompt), run the Pre-Delegation Checks (see Codex Delegation Mode section below) now — before choosing a strategy. If all checks pass and `delegation_active` is still true, force **serial inline execution** for all units and proceed directly to Phase 2. If any check disables delegation (`delegation_active` becomes false), fall through to the standard strategy table below and select normally based on plan size and dependency structure. If delegation is active but the input is a bare prompt (no plan file), set `delegation_active` to false with a brief note: "Delegation requires a plan file -- using standard mode." and continue with the standard strategy selection below.
+
    After creating the task list, decide how to execute based on the plan's size and dependency structure:
 
    | Strategy | When to use |
@@ -158,7 +199,9 @@ Determine how to proceed based on what was provided in `<input_document>`.
      - Read any referenced files from the plan or discovered during Phase 0
      - Look for similar patterns in codebase
      - Find existing test files for implementation files being changed (Test Discovery — see below)
-     - Implement following existing conventions
+     - If delegation_active: branch to the Codex Delegation Execution Loop
+       (see Codex Delegation Mode section below)
+     - Otherwise: implement following existing conventions
      - Add, update, or remove tests to match implementation changes (see Test Discovery below)
      - Run System-Wide Test Check (see below)
      - Run tests after changes
@@ -391,6 +434,8 @@ For genuinely large plans where agents need to communicate with each other, chal
 
 **Agent teams are typically experimental and require opt-in.** Do not attempt to use agent teams unless the user explicitly requests swarm mode or agent teams, and the platform supports it.
 
+**Mutual exclusion with delegation mode:** Delegation mode and swarm mode are mutually exclusive. When `delegation_active` is true, serial execution is enforced and swarm mode is unavailable -- even if the user or a calling skill requests swarm mode. Delegation takes precedence because it requires serial execution (each unit must start from a clean working tree). If swarm mode would otherwise activate but delegation is on, emit: "Delegation mode active -- serial execution enforced, swarm mode unavailable."
+
 ### When to Use Agent Teams vs Subagents
 
 | Agent Teams | Subagents (standard mode) |
@@ -412,67 +457,234 @@ Most plans should use subagent dispatch from standard mode. Agent teams add sign
 
 ---
 
-## External Delegate Mode (Superseded)
+## Codex Delegation Mode
 
-> **Superseded:** This section is replaced by ce:work's Codex Delegation Mode, which uses concrete bash templates instead of prose-based CLI invocations. This section is retained as documentation of the prior approach. Use `delegate:codex` with ce:work for delegation.
+When delegation is active (resolved via the Argument Parsing section above), code implementation for each plan unit is delegated to the Codex CLI (`codex exec`) instead of being implemented directly. The current agent retains control of planning, review, git operations, and orchestration.
 
-For plans where token conservation matters, delegate code implementation to an external delegate (currently Codex CLI) while keeping planning, review, and git operations in the current agent.
+### Pre-Delegation Checks
 
-This mode integrates with the existing Phase 1 Step 4 strategy selection as a **task-level modifier** - the strategy (inline/serial/parallel) still applies, but the implementation step within each tagged task delegates to the external tool instead of executing directly.
+Run these checks in order when `delegation_active` is true. If any check fails, fall back to standard mode for the remainder of the plan execution.
 
-### When to Use External Delegation
+**1. Environment Guard**
 
-| External Delegation | Standard Mode |
-|---------------------|---------------|
-| Task is pure code implementation | Task requires research or exploration |
-| Plan has clear acceptance criteria | Task is ambiguous or needs iteration |
-| Token conservation matters (e.g., Max20 plan) | Unlimited plan or small task |
-| Files to change are well-scoped | Changes span many interconnected files |
+Check whether the current agent is already running inside a Codex sandbox:
 
-### Enabling External Delegation (Superseded)
+```bash
+# If either variable is set, delegation would recurse or fail
+test -n "$CODEX_SANDBOX" || test -n "$CODEX_SESSION_ID"
+```
 
-> **Superseded:** Delegation is now controlled by ce:work's `delegate:codex` argument and resolution chain. The `Execution target: external-delegate` tag is no longer emitted by ce:plan.
+If inside a sandbox:
+- If `delegation_source` is `argument` (user explicitly requested delegation): emit "Already inside Codex sandbox -- using standard mode." and set `delegation_active` to false.
+- If `delegation_source` is `local.md` or `default` (delegation enabled implicitly): set `delegation_active` to false silently -- no notification.
 
-External delegation previously activated when the user said "use codex", "delegate to codex", or "delegate mode", or when a plan unit contained `Execution target: external-delegate` in its Execution note.
+**2. Availability Check**
 
-### Environment Guard
+```bash
+command -v codex
+```
 
-Before attempting delegation, check whether the current agent is already running inside a delegate's sandbox. Delegation from within a sandbox will fail silently or recurse.
+If the Codex CLI is not on PATH: emit "Codex CLI not found -- using standard mode." and set `delegation_active` to false.
 
-Check for known sandbox indicators:
-- `CODEX_SANDBOX` environment variable is set
-- `CODEX_SESSION_ID` environment variable is set
-- The filesystem is read-only at `.git/` (Codex sandbox blocks git writes)
+**3. Consent Flow**
 
-If any indicator is detected, print "Already running inside a delegate sandbox - using standard mode." and proceed with standard execution for that task.
+If `consent_granted` is not true (from local.md `work_codex_consent`):
 
-### External Delegation Workflow
+Present a one-time consent warning using the platform's blocking question tool (AskUserQuestion in Claude Code, request_user_input in Codex, ask_user in Gemini). If no question tool is available, present numbered options and wait for the user's reply before proceeding.
 
-When external delegation is active, follow this workflow for each tagged task. Do not skip delegation because a task seems "small", "simple", or "faster inline". The user or plan explicitly requested delegation.
+The consent warning explains:
+- Delegation sends each implementation unit to `codex exec` as a structured prompt
+- **yolo mode** (`--yolo` / `--dangerously-bypass-approvals-and-sandbox`): Full system access including network. Required for verification steps that run tests or install dependencies. **Recommended.**
+- **full-auto mode** (`--full-auto`): Workspace-write sandbox, no network access. Tests and installs that need network will fail. Suitable for pure code-writing tasks without verification dependencies.
 
-1. **Check availability**
+Present the sandbox mode choice: (1) yolo (recommended), (2) full-auto.
 
-   Verify the delegate CLI is installed. If not found, print "Delegate CLI not installed - continuing with standard mode." and proceed normally.
+On acceptance:
+- Write `work_codex_consent: true` and `work_codex_sandbox: <chosen-mode>` to `.claude/compound-engineering.local.md` YAML frontmatter
+- To write local.md: (1) if file does not exist, create it with YAML frontmatter wrapper; (2) if file exists with valid frontmatter, merge new keys preserving existing keys; (3) if file exists without frontmatter or with malformed frontmatter, prepend a valid frontmatter block and preserve existing body content below the closing `---`
+- Update `consent_granted` and `sandbox_mode` in the resolved state
 
-2. **Build prompt** — For each task, assemble a prompt from the plan's implementation unit (Goal, Files, Approach, Conventions from project CLAUDE.md/AGENTS.md). Include rules: no git commits, no PRs, run `git status` and `git diff --stat` when done. Never embed credentials or tokens in the prompt - pass auth through environment variables.
+On decline:
+- Ask whether to disable delegation entirely for this project
+- If yes: write `work_delegate: false` to local.md, set `delegation_active` to false, proceed in standard mode
+- If no: set `delegation_active` to false for this invocation only, proceed in standard mode
 
-3. **Write prompt to file** — Save the assembled prompt to a unique temporary file to avoid shell quoting issues and cross-task races. Use a unique filename per task.
+**Headless consent:** If running in a headless or non-interactive context, delegation proceeds only if `work_codex_consent` is already `true` in local.md. If consent is not recorded, set `delegation_active` to false silently. Headless runs never prompt for consent and never silently escalate to unsandboxed mode without prior interactive consent.
 
-4. **Delegate** — Run the delegate CLI, piping the prompt file via stdin (not argv expansion, which hits `ARG_MAX` on large prompts). Omit the model flag to use the delegate's default model, which stays current without manual updates.
+### Prompt Template
 
-5. **Review diff** — After the delegate finishes, verify the diff is non-empty and in-scope. Run the project's test/lint commands. If the diff is empty or out-of-scope, fall back to standard mode for that task.
+Before each delegated unit, write a prompt file to `.context/compound-engineering/codex-delegation/prompt-<unit-id>.md`. Create the directory if it does not exist.
 
-6. **Commit** — The current agent handles all git operations. The delegate's sandbox blocks `.git/index.lock` writes, so the delegate cannot commit. Stage changes and commit with a conventional message.
+Build the prompt from the plan's implementation unit using these XML-tagged sections:
 
-7. **Error handling** — On any delegate failure (rate limit, error, empty diff), fall back to standard mode for that task. Track consecutive failures - after 3 consecutive failures, disable delegation for remaining tasks and print "Delegate disabled after 3 consecutive failures - completing remaining tasks in standard mode."
+```xml
+<task>
+[Goal from the implementation unit. State the concrete job, the relevant
+repository context, and the expected end state.]
+</task>
+
+<files>
+[File list from the implementation unit -- files to create, modify, or read.]
+</files>
+
+<patterns>
+[File paths from the unit's "Patterns to follow" field. List the paths so
+Codex can read them for reference. If the unit has no patterns, note:
+"No explicit patterns referenced -- follow existing conventions in the
+modified files."]
+</patterns>
+
+<approach>
+[Approach from the implementation unit. Key design or sequencing decisions.]
+</approach>
+
+<constraints>
+- Do NOT run git commit, git push, or create PRs -- the orchestrating agent handles all git operations
+- Restrict all modifications to files within the repository root
+- Keep changes tightly scoped to the stated task -- avoid unrelated refactors, renames, or cleanup
+- If you discover mid-execution that you need to modify files outside the repo root, complete what you can within the repo and report what you could not do via the result schema issues field
+- You MUST fill in the result schema honestly: status "completed" only if all changes were made, "partial" if incomplete, "failed" if no meaningful progress
+</constraints>
+
+<verify>
+[Test and lint commands from the project. Examples: bun test, npm test,
+bin/rails test, etc. If the unit specifies verification commands, use those.
+If none are specified: "Run any available test suite or lint command to
+verify changes."]
+</verify>
+
+<output_contract>
+Report your result via the --output-schema mechanism. Fill in every field:
+- status: "completed" | "partial" | "failed"
+- files_modified: array of file paths you changed
+- issues: array of strings describing any problems, gaps, or out-of-scope
+  work discovered
+- summary: one-paragraph description of what was done
+</output_contract>
+
+<completeness_contract>
+Resolve the task fully before stopping.
+Do not stop at the first plausible answer.
+Check whether there are follow-on fixes, edge cases, or cleanup needed
+for a correct result.
+</completeness_contract>
+
+<action_safety>
+Keep changes tightly scoped to the stated task.
+Avoid unrelated refactors, renames, or cleanup unless they are required
+for correctness.
+Call out any risky or irreversible action before taking it.
+</action_safety>
+```
+
+### Result Schema
+
+Write the result schema to `.context/compound-engineering/codex-delegation/result-schema.json` once at the start of delegated execution (reused across all units):
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "status": { "enum": ["completed", "partial", "failed"] },
+    "files_modified": { "type": "array", "items": { "type": "string" } },
+    "issues": { "type": "array", "items": { "type": "string" } },
+    "summary": { "type": "string" }
+  },
+  "required": ["status", "files_modified", "issues", "summary"],
+  "additionalProperties": false
+}
+```
+
+Each unit's result is written to `.context/compound-engineering/codex-delegation/result-<unit-id>.json` via the `-o` flag. Both prompt and result files are cleaned up after each successful unit. On failure, leave files in place for debugging.
+
+**Known limitation:** `--output-schema` only works with `gpt-5` family models (e.g., `o4-mini`, `gpt-5.4`), not `gpt-5-codex` or `codex-` prefixed models (Codex CLI bug #4181). If the result JSON is absent or malformed after a successful exit code, classify as task failure.
+
+### Execution Loop
+
+This loop replaces the "implement following existing conventions" step in Phase 2 for each unit when delegation is active. Initialize a `consecutive_failures` counter at 0 before the first delegated unit.
+
+**Clean-baseline preflight:** Before the first delegated unit, verify the working tree is clean:
+
+```bash
+test -z "$(git status --short)"
+```
+
+If dirty, stop and present options using the platform's blocking question tool: (1) commit current changes, (2) stash explicitly (`git stash push -m "pre-delegation"`), (3) continue in standard mode (sets `delegation_active` to false). Do not auto-stash user changes.
+
+**Per-unit eligibility check:** Before delegating each unit, assess eligibility:
+- If the unit requires modifications outside the repository root -> execute locally in standard mode, state: "Unit <id> requires out-of-repo changes -- executing locally."
+- If the unit is trivially small (single-file config change, simple substitution where delegation overhead exceeds the work) -> execute locally in standard mode, state: "Unit <id> is trivial -- executing locally."
+- Otherwise -> delegate to Codex.
+
+State the execution mode (delegated or local) for each unit before execution.
+
+**Delegation invocation:** For each eligible unit:
+
+1. Write the prompt file using the Prompt Template above
+2. Execute the Codex CLI verbatim:
+
+```bash
+# Resolve sandbox flag from settings
+if [ "$SANDBOX_MODE" = "full-auto" ]; then
+  SANDBOX_FLAG="--full-auto"
+else
+  SANDBOX_FLAG="--yolo"
+fi
+
+codex exec \
+  $SANDBOX_FLAG \
+  --output-schema .context/compound-engineering/codex-delegation/result-schema.json \
+  -o .context/compound-engineering/codex-delegation/result-<unit-id>.json \
+  - < .context/compound-engineering/codex-delegation/prompt-<unit-id>.md
+```
+
+Do not improvise CLI flags or modify this invocation template.
+
+**Result classification:** After `codex exec` returns, classify using multiple signals:
+
+| # | Signal | Classification | Action |
+|---|--------|---------------|--------|
+| 1 | Exit code != 0 | CLI failure | Rollback current unit to HEAD. Hard fall back to standard mode for ALL remaining units. |
+| 2 | Exit code 0, result JSON missing or malformed | Task failure | Rollback current unit to HEAD. Increment `consecutive_failures`. |
+| 3 | Exit code 0, `status: "failed"` | Task failure | Rollback current unit to HEAD. Increment `consecutive_failures`. |
+| 4 | Exit code 0, `status: "partial"` | Partial success | Keep the diff. Switch to local completion for this same unit -- finish the work, verify, and commit before moving on. Increment `consecutive_failures`. |
+| 5 | Exit code 0, `status: "completed"`, VERIFY fails | Verify failure | Rollback current unit to HEAD. Increment `consecutive_failures`. |
+| 6 | Exit code 0, `status: "completed"`, VERIFY passes | Success | Commit changes. Reset `consecutive_failures` to 0. Clean up prompt and result files. |
+
+**Rollback procedure:** Rollback restores the working tree to HEAD:
+
+```bash
+git checkout -- . && git clean -fd
+```
+
+This is safe because delegated mode starts from a clean baseline and never auto-stashes user-owned local changes.
+
+**Commit on success:** After each successful unit, commit the changes immediately:
+
+```bash
+git add <files from result's files_modified>
+git commit -m "feat(<scope>): <unit goal summary>"
+```
+
+This enforces a clean working tree for the next unit.
+
+**Partial success handling:** When `status: "partial"`:
+1. Keep Codex's diff in place
+2. Read the result's `issues` field to understand gaps
+3. Complete the remaining work for this same unit locally in standard mode
+4. Run VERIFY commands
+5. If local completion succeeds: commit all changes for this unit, clean up scratch files
+6. If local completion fails: rollback the entire unit to HEAD
+7. Do not advance to the next unit until the current unit is fully committed or rolled back
+
+**Circuit breaker:** After 3 consecutive failures (`consecutive_failures >= 3`), set `delegation_active` to false and emit: "Codex delegation disabled after 3 consecutive failures -- completing remaining units in standard mode." A successful delegation resets the counter to 0. The counter persists across units within a single plan execution because repeated failures are likely environmental (codex auth, model issues), not unit-specific.
 
 ### Mixed-Model Attribution
 
-When some tasks are executed by the delegate and others by the current agent, use the following attribution in Phase 4:
-
-- If all tasks used the delegate: attribute to the delegate model
-- If all tasks used standard mode: attribute to the current agent's model
-- If mixed: use `Generated with [CURRENT_MODEL] + [DELEGATE_MODEL] via [HARNESS]` and note which tasks were delegated in the PR description
+When some units are executed by Codex and others locally, the PR attribution in Phase 4 should credit both models:
+- If all units used delegation: attribute to the Codex model
+- If all units used standard mode: attribute to the current agent's model
+- If mixed: note which units were delegated in the PR description and credit both models
 
 ---
 

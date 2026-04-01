@@ -13,6 +13,8 @@ PR #364 attempted this via a separate `ce-work-beta` skill with prose-based dele
 
 ce-work-beta does have a structured 7-step External Delegate Mode (environment guards, availability checks, prompt file writing, circuit breaker), but the CLI invocation step itself is prose-based, causing the non-determinism. This feature ports the useful structural elements (guards, circuit breaker pattern) while replacing prose invocations with concrete bash templates.
 
+> **Implementation note (2026-03-31):** The final rollout was redirected to `ce:work-beta` so stable `ce:work` remains unchanged during beta. `ce:work-beta` must be invoked manually; `ce:plan` and workflow handoffs stay on stable `ce:work` until promotion.
+
 ## Delegation Flow
 
 ```

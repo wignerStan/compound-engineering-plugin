@@ -12,6 +12,8 @@ origin: docs/brainstorms/2026-03-31-codex-delegation-requirements.md
 
 Add an optional Codex delegation mode to ce:work that delegates code-writing to the Codex CLI (`codex exec`) using concrete bash templates. When active with a plan file, each implementation unit is sent to Codex with a structured prompt and result schema, then classified, verified, and committed or rolled back. This replaces ce-work-beta's prose-based delegation (PR #364) which caused non-deterministic CLI invocations.
 
+> **Implementation note (2026-03-31):** The final rollout was redirected to `ce:work-beta` so stable `ce:work` remains unchanged during beta. `ce:work-beta` must be invoked manually; `ce:plan` and other workflow handoffs remain pointed at stable `ce:work` until promotion.
+
 ## Problem Frame
 
 Users running ce:work from Claude Code (or other non-Codex agents) want to delegate token-heavy implementation work to Codex — either for better code quality or token conservation. PR #364's approach failed because the agent improvised CLI syntax each run. ce-work-beta has a structured 7-step External Delegate Mode with useful patterns (environment guards, circuit breaker), but the CLI invocation step itself is prose-based. This plan ports the structural patterns and replaces prose invocations with concrete, tested bash templates. (see origin: docs/brainstorms/2026-03-31-codex-delegation-requirements.md)

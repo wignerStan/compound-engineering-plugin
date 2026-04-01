@@ -191,7 +191,6 @@ Look for signals such as:
 - The user explicitly asks for TDD, test-first, or characterization-first work
 - The origin document calls for test-first implementation or exploratory hardening of legacy code
 - Local research shows the target area is legacy, weakly tested, or historically fragile, suggesting characterization coverage before changing behavior
-- The user asks for Codex delegation, says "use codex", "delegate mode", or mentions token conservation -- note this in the plan overview so ce:work can be invoked with `delegate:codex`. Do not add execution-target tags to individual units; delegation is controlled by ce:work's resolution chain at execution time
 
 When the signal is clear, carry it forward silently in the relevant implementation units.
 
