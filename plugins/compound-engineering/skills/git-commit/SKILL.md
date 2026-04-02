@@ -35,7 +35,7 @@ Create a single, well-crafted git commit from the current working tree changes.
 Run this single command to gather all context:
 
 ```bash
-printf '=== STATUS ===\n' && git status && printf '\n=== DIFF ===\n' && git diff HEAD && printf '\n=== BRANCH ===\n' && git branch --show-current && printf '\n=== LOG ===\n' && git log --oneline -10; printf '\n=== DEFAULT_BRANCH ===\n'; git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo '__DEFAULT_BRANCH_UNRESOLVED__'
+printf '=== STATUS ===\n'; git status; printf '\n=== DIFF ===\n'; git diff HEAD; printf '\n=== BRANCH ===\n'; git branch --show-current; printf '\n=== LOG ===\n'; git log --oneline -10; printf '\n=== DEFAULT_BRANCH ===\n'; git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo '__DEFAULT_BRANCH_UNRESOLVED__'
 ```
 
 ---

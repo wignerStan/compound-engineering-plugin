@@ -68,7 +68,7 @@ Interpret the result this way:
 Run this single command to gather all context:
 
 ```bash
-printf '=== STATUS ===\n' && git status && printf '\n=== DIFF ===\n' && git diff HEAD && printf '\n=== BRANCH ===\n' && git branch --show-current && printf '\n=== LOG ===\n' && git log --oneline -10; printf '\n=== DEFAULT_BRANCH ===\n'; git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo '__DEFAULT_BRANCH_UNRESOLVED__'; printf '\n=== PR_CHECK ===\n'; PR_OUT=$(gh pr view --json url,title,state 2>&1); PR_EXIT=$?; printf '%s\n__GH_PR_VIEW_EXIT__=%s\n' "$PR_OUT" "$PR_EXIT"
+printf '=== STATUS ===\n'; git status; printf '\n=== DIFF ===\n'; git diff HEAD; printf '\n=== BRANCH ===\n'; git branch --show-current; printf '\n=== LOG ===\n'; git log --oneline -10; printf '\n=== DEFAULT_BRANCH ===\n'; git rev-parse --abbrev-ref origin/HEAD 2>/dev/null || echo '__DEFAULT_BRANCH_UNRESOLVED__'; printf '\n=== PR_CHECK ===\n'; PR_OUT=$(gh pr view --json url,title,state 2>&1); PR_EXIT=$?; printf '%s\n__GH_PR_VIEW_EXIT__=%s\n' "$PR_OUT" "$PR_EXIT"
 ```
 
 Interpret the PR check result using the Reusable PR probe rules above.
