@@ -158,6 +158,7 @@ Run these agents in parallel:
 
 - Task compound-engineering:research:repo-research-analyst(Scope: technology, architecture, patterns. {planning context summary})
 - Task compound-engineering:research:learnings-researcher(planning context summary)
+- (conditional) Task compound-engineering:research:slack-researcher({planning context summary}) — if any `slack_*` tool is available in the tool list. If the agent returns an error or reports that the Slack MCP is unavailable, log a warning and continue without Slack context.
 
 Collect:
 - Technology stack and versions (used in section 1.2 to make sharper external research decisions)
@@ -165,6 +166,7 @@ Collect:
 - Implementation patterns, relevant files, modules, and tests
 - AGENTS.md guidance that materially affects the plan, with CLAUDE.md used only as compatibility fallback when present
 - Institutional learnings from `docs/solutions/`
+- Organizational context from Slack (when the slack-researcher agent ran successfully)
 
 #### 1.1b Detect Execution Posture Signals
 
@@ -229,6 +231,7 @@ If Step 1.2 indicates external research is useful, run these agents in parallel:
 Summarize:
 - Relevant codebase patterns and file paths
 - Relevant institutional learnings
+- Organizational context from Slack conversations, if gathered (prior discussions, decisions, or domain knowledge relevant to the feature)
 - External references and best practices, if gathered
 - Related issues, PRs, or prior art
 - Any constraints that should materially shape the plan

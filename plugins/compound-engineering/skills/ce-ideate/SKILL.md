@@ -117,11 +117,16 @@ Run agents in parallel in the **foreground** (do not use background dispatch —
 
    If the agent reports fewer than 5 total issues, note "Insufficient issue signal for theme analysis" and proceed with default ideation frames in Phase 2.
 
+4. **Slack context** (conditional) — if any `slack_*` tool is available in the tool list, dispatch `compound-engineering:research:slack-researcher` with the focus hint as context. Run this in parallel with agents 1-3.
+
+   If the agent returns an error or reports Slack MCP unavailable, log a warning ("Slack context unavailable: {reason}. Proceeding without organizational context.") and continue.
+
 Consolidate all results into a short grounding summary. When issue intelligence is present, keep it as a distinct section so ideation sub-agents can distinguish between code-observed and user-reported signals:
 
 - **Codebase context** — project shape, notable patterns, obvious pain points, likely leverage points
 - **Past learnings** — relevant institutional knowledge from docs/solutions/
 - **Issue intelligence** (when present) — theme summaries from the issue intelligence agent, preserving theme titles, descriptions, issue counts, and trend directions
+- **Slack context** (when present) — relevant organizational context, team discussions, and decisions from Slack channels surfaced by the slack-researcher agent
 
 Do **not** do external research in v1.
 
