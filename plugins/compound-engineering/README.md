@@ -6,8 +6,8 @@ AI-powered development tools that get smarter with every use. Make each unit of 
 
 | Component | Count |
 |-----------|-------|
-| Agents | 50 |
-| Skills | 41 |
+| Agents | 50+ |
+| Skills | 40+ |
 
 ## Skills
 
