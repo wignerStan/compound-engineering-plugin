@@ -234,7 +234,7 @@ If Step 1.2 indicates external research is useful, run these agents in parallel:
 Summarize:
 - Relevant codebase patterns and file paths
 - Relevant institutional learnings
-- Organizational context from Slack conversations, if the user explicitly requested Slack research (prior discussions, decisions, or domain knowledge relevant to the feature)
+- Organizational context from Slack conversations, if gathered (prior discussions, decisions, or domain knowledge relevant to the feature)
 - External references and best practices, if gathered
 - Related issues, PRs, or prior art
 - Any constraints that should materially shape the plan
