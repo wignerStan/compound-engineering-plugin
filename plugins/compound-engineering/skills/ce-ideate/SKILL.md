@@ -123,7 +123,14 @@ Consolidate all results into a short grounding summary. When issue intelligence 
 - **Past learnings** — relevant institutional knowledge from docs/solutions/
 - **Issue intelligence** (when present) — theme summaries from the issue intelligence agent, preserving theme titles, descriptions, issue counts, and trend directions
 
-**Slack context** (opt-in) — If any `slack_*` tool is available in the tool list and the user's prompt explicitly asks for Slack context, dispatch `compound-engineering:research:slack-researcher` with the focus hint in parallel with the other Phase 1 agents. Include its findings in the grounding summary. If the user did not ask for Slack context, include a brief note in the Phase 1 output instead: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." Do not dispatch the slack-researcher agent automatically when the user has not asked for it. If the user asked for Slack context but no `slack_*` tools are available, note in the output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search."
+**Slack context** (opt-in) — never auto-dispatch. Route by condition:
+
+| `slack_*` tools available? | User asked for Slack context? | Action |
+|---|---|---|
+| Yes | Yes | Dispatch `compound-engineering:research:slack-researcher` with the focus hint in parallel with other Phase 1 agents. Include findings in the grounding summary. |
+| Yes | No | Note in output: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." |
+| No | Yes | Note in output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search." |
+| No | No | Do nothing. |
 
 Do **not** do external research in v1.
 

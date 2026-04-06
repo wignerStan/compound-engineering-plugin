@@ -165,7 +165,14 @@ Collect:
 - AGENTS.md guidance that materially affects the plan, with CLAUDE.md used only as compatibility fallback when present
 - Institutional learnings from `docs/solutions/`
 
-**Slack context** (opt-in) — If any `slack_*` tool is available in the tool list and the user's prompt explicitly asks for Slack context, dispatch `compound-engineering:research:slack-researcher` with the planning context summary in parallel with the other Phase 1.1 agents. If the origin document contains a Slack context section, include it verbatim so the researcher can focus on gaps. Include its findings in the consolidation. If the user did not ask for Slack context, include a brief note in the Phase 1.1 output instead: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." Do not dispatch the slack-researcher agent automatically when the user has not asked for it. If the user asked for Slack context but no `slack_*` tools are available, note in the output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search."
+**Slack context** (opt-in) — never auto-dispatch. Route by condition:
+
+| `slack_*` tools available? | User asked for Slack context? | Action |
+|---|---|---|
+| Yes | Yes | Dispatch `compound-engineering:research:slack-researcher` with the planning context summary in parallel with other Phase 1.1 agents. If the origin document has a Slack context section, pass it verbatim so the researcher focuses on gaps. Include findings in consolidation. |
+| Yes | No | Note in output: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." |
+| No | Yes | Note in output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search." |
+| No | No | Do nothing. |
 
 #### 1.1b Detect Execution Posture Signals
 

@@ -96,7 +96,14 @@ If nothing obvious appears after a short scan, say so and continue. Two rules go
 
 2. **Defer design decisions to planning** — Implementation details like schemas, migration strategies, endpoint structure, or deployment topology belong in planning, not here — unless the brainstorm is itself about a technical or architectural decision, in which case those details are the subject of the brainstorm and should be explored.
 
-**Slack context** (opt-in, Standard and Deep only) — If any `slack_*` tool is available in the tool list and the user's prompt explicitly asks for Slack context, dispatch `compound-engineering:research:slack-researcher` with a brief summary of the brainstorm topic alongside the Phase 1.1 work. Incorporate findings into constraint and context awareness. If the user did not ask for Slack context, include a brief note after Phase 1.1 completes instead: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." Do not dispatch the slack-researcher agent automatically when the user has not asked for it. If the user asked for Slack context but no `slack_*` tools are available, note in the output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search."
+**Slack context** (opt-in, Standard and Deep only) — never auto-dispatch. Route by condition:
+
+| `slack_*` tools available? | User asked for Slack context? | Action |
+|---|---|---|
+| Yes | Yes | Dispatch `compound-engineering:research:slack-researcher` with a brief summary of the brainstorm topic alongside Phase 1.1 work. Incorporate findings into constraint and context awareness. |
+| Yes | No | Note in output: "Slack tools detected. Ask me to search Slack for organizational context at any point, or include it in your next prompt." |
+| No | Yes | Note in output: "Slack context was requested but no Slack tools are available. Install and authenticate the Slack plugin to enable organizational context search." |
+| No | No | Do nothing. |
 
 #### 1.2 Product Pressure Test
 
