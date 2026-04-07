@@ -101,7 +101,10 @@ Every script outputs a `_meta` line at the end with `files_processed` and `parse
 
 ### Step 1: Determine scope and discover sessions
 
-**Scope decision.** Default to the current project (sessions matching the current working directory). Widen to all projects only when the question explicitly asks across projects — e.g., "have I dealt with rate limiting in any repo?" or "what did I work on last week across everything?" If the scope is unclear, stay project-scoped.
+**Scope decision.** Two dimensions to resolve before scanning:
+
+- **Project scope**: Default to the current project. Widen to all projects only when the question explicitly asks.
+- **Platform scope**: Default to all platforms (Claude Code, Codex, Cursor). Narrow to a single platform when the question specifies one. If unclear on either dimension, use the default.
 
 Determine the scan window from the Time Range table above, then discover and extract metadata in bulk.
 
