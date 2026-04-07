@@ -149,8 +149,8 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 
    Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keywords>" --state all --limit 5`. If `gh` is not installed, fall back to the GitHub MCP tools (e.g., `unblocked` data_retrieval) if available. If neither is available, skip GitHub issue search and note it was skipped in the output.
 
-#### 4. **Session History Researcher**
-   - Dispatched as `compound-engineering:research:session-history-researcher`
+#### 4. **Session Historian**
+   - Dispatched as `compound-engineering:research:session-historian`
    - Searches prior Claude Code, Codex, and Cursor sessions for the same project to find related investigation context
    - Correlates sessions by git branch (Claude Code) and working directory (Codex, Cursor)
    - In the dispatch prompt, pass:
