@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
-"""Extract the conversation skeleton from a Claude Code or Codex JSONL session file.
+"""Extract the conversation skeleton from a Claude Code, Codex, or Cursor JSONL session file.
 
 Usage: cat <session.jsonl> | python3 extract-skeleton.py
 
-Auto-detects platform (Claude Code vs Codex) from the JSONL structure.
+Auto-detects platform (Claude Code, Codex, or Cursor) from the JSONL structure.
 Extracts:
   - User messages (text only, no tool results)
   - Assistant text (no thinking/reasoning blocks)
@@ -28,15 +28,14 @@ _STRIP_BLOCK = re.compile(
     re.DOTALL,
 )
 _STRIP_TAG = re.compile(
-    r"</?(?:command-message|command-name|command-args)[^>]*>"
+    r"</?(?:command-message|command-name|command-args|user_query)[^>]*>"
 )
 
 
-def clean_claude_text(text):
-    """Strip Claude Code framework wrapper tags from message text."""
+def clean_text(text):
+    """Strip framework wrapper tags from message text (Claude and Cursor)."""
     text = _STRIP_BLOCK.sub("", text)
     text = _STRIP_TAG.sub("", text)
-    # Collapse runs of whitespace left by removed blocks
     text = re.sub(r"\n{3,}", "\n\n", text).strip()
     return text
 
@@ -63,11 +62,12 @@ def flush_tools():
             # Print individually
             for e in group:
                 status = f" -> {e['status']}" if e.get("status") else ""
-                print(f"[{e['ts']}] [tool] {name} {e['target']}{status}")
+                ts_prefix = f"[{e['ts']}] " if e.get("ts") else ""
+                print(f"{ts_prefix}[tool] {name} {e['target']}{status}")
                 stats["tool"] += 1
         else:
             # Collapse
-            ts = group[0]["ts"]
+            ts = group[0].get("ts", "")
             targets = [e["target"] for e in group if e.get("target")]
             ok = sum(1 for e in group if e.get("status") == "ok")
             err = sum(1 for e in group if e.get("status") and e["status"] != "ok")
@@ -88,7 +88,8 @@ def flush_tools():
             else:
                 status_str = f" -> {ok} ok, {err} error"
 
-            print(f"[{ts}] [tools] {len(group)}x {name} ({target_str}){status_str}")
+            ts_prefix = f"[{ts}] " if ts else ""
+            print(f"{ts_prefix}[tools] {len(group)}x {name} ({target_str}){status_str}")
             stats["tool"] += len(group)
 
     pending_tools.clear()
@@ -139,7 +140,7 @@ def handle_claude(obj):
             content = " ".join(texts)
 
         if isinstance(content, str):
-            content = clean_claude_text(content)
+            content = clean_text(content)
             if len(content) > 15:
                 flush_tools()
                 print(f"[{ts}] [user] {content[:800]}")
@@ -214,6 +215,55 @@ def handle_codex(obj):
         # Skip function_call — exec_command_end is the deduplicated version with status
 
 
+def handle_cursor(obj):
+    """Cursor agent transcripts: role-based, no timestamps, same content structure as Claude."""
+    role = obj.get("role")
+    content = obj.get("message", {}).get("content", [])
+
+    if role == "user":
+        texts = []
+        for block in (content if isinstance(content, list) else []):
+            if block.get("type") == "text":
+                texts.append(block.get("text", ""))
+        text = clean_text(" ".join(texts))
+        if len(text) > 15:
+            flush_tools()
+            # No timestamps available in Cursor transcripts
+            print(f"[user] {text[:800]}")
+            print("---")
+            stats["user"] += 1
+
+    elif role == "assistant":
+        has_text = False
+        for block in (content if isinstance(content, list) else []):
+            if block.get("type") == "text":
+                text = block.get("text", "")
+                # Skip [REDACTED] placeholder blocks
+                if len(text) > 20 and text.strip() != "[REDACTED]":
+                    if not has_text:
+                        flush_tools()
+                        has_text = True
+                    print(f"[assistant] {text[:800]}")
+                    print("---")
+                    stats["assistant"] += 1
+            elif block.get("type") == "tool_use":
+                name = block.get("name", "unknown")
+                inp = block.get("input", {})
+                target = (
+                    inp.get("path")
+                    or inp.get("file_path")
+                    or inp.get("command", "")[:120]
+                    or inp.get("pattern", "")
+                    or inp.get("glob_pattern", "")
+                    or inp.get("target_directory", "")
+                    or ""
+                )
+                if isinstance(target, str) and len(target) > 120:
+                    target = target[:120]
+                # No status info available — Cursor doesn't log tool results
+                pending_tools.append({"ts": "", "name": name, "target": target})
+
+
 # Auto-detect platform from first few lines, then process all
 detected = None
 buffer = []
@@ -232,10 +282,13 @@ for line in sys.stdin:
                 detected = "claude"
             elif obj.get("type") in ("session_meta", "turn_context", "response_item"):
                 detected = "codex"
+            elif obj.get("role") in ("user", "assistant") and "type" not in obj:
+                detected = "cursor"
         except (json.JSONDecodeError, KeyError):
             pass
 
-handler = handle_claude if detected == "claude" else handle_codex
+handlers = {"claude": handle_claude, "codex": handle_codex, "cursor": handle_cursor}
+handler = handlers.get(detected, handle_codex)
 
 for line in buffer:
     try:

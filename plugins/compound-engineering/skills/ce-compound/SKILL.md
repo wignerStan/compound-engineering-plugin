@@ -151,8 +151,8 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 
 #### 4. **Session History Researcher**
    - Dispatched as `compound-engineering:research:session-history-researcher`
-   - Searches prior Claude Code and Codex sessions for the same project to find related investigation context
-   - Correlates sessions by git branch (Claude Code) and working directory (Codex)
+   - Searches prior Claude Code, Codex, and Cursor sessions for the same project to find related investigation context
+   - Correlates sessions by git branch (Claude Code) and working directory (Codex, Cursor)
    - In the dispatch prompt, pass:
      - The current problem description, git branch, and working directory
      - The output format the agent should use:

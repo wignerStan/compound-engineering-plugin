@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Extract error signals from a Claude Code or Codex JSONL session file.
+"""Extract error signals from a Claude Code, Codex, or Cursor JSONL session file.
 
 Usage: cat <session.jsonl> | python3 extract-errors.py
 
-Auto-detects platform (Claude Code vs Codex) from the JSONL structure.
+Auto-detects platform from the JSONL structure.
+Note: Cursor agent transcripts do not log tool results, so no errors can be extracted.
 Finds failed tool calls / commands and outputs them with timestamps.
 Outputs a _meta line at the end with processing stats.
 """
@@ -73,10 +74,17 @@ for line in sys.stdin:
                 detected = "claude"
             elif obj.get("type") in ("session_meta", "turn_context", "response_item"):
                 detected = "codex"
+            elif obj.get("role") in ("user", "assistant") and "type" not in obj:
+                detected = "cursor"
         except (json.JSONDecodeError, KeyError):
             pass
 
-handler = handle_claude if detected == "claude" else handle_codex
+# Cursor transcripts don't log tool results — no errors to extract
+def handle_noop(obj):
+    pass
+
+handlers = {"claude": handle_claude, "codex": handle_codex, "cursor": handle_noop}
+handler = handlers.get(detected, handle_noop)
 
 for line in buffer:
     try:

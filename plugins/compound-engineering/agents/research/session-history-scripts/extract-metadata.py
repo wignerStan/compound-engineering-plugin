@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Extract session metadata from Claude Code and/or Codex JSONL files.
+"""Extract session metadata from Claude Code, Codex, and Cursor JSONL files.
 
 Batch mode (preferred — one invocation for all files):
   python3 extract-metadata.py /path/to/dir/*.jsonl
@@ -8,7 +8,7 @@ Batch mode (preferred — one invocation for all files):
 Single-file mode (stdin):
   head -20 <session.jsonl> | python3 extract-metadata.py
 
-Auto-detects platform (Claude Code vs Codex) from the JSONL structure.
+Auto-detects platform from the JSONL structure.
 Outputs one JSON object per file, one per line.
 Includes a final _meta line with processing stats.
 """
@@ -57,8 +57,21 @@ def try_codex(lines):
     return meta if meta else None
 
 
+def try_cursor(lines):
+    """Cursor agent transcripts: role-based entries, no timestamps or metadata fields."""
+    for line in lines:
+        try:
+            obj = json.loads(line.strip())
+            # Cursor entries have 'role' at top level but no 'type'
+            if obj.get("role") in ("user", "assistant") and "type" not in obj:
+                return {"platform": "cursor"}
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return None
+
+
 def extract_from_lines(lines):
-    return try_claude(lines) or try_codex(lines)
+    return try_claude(lines) or try_codex(lines) or try_cursor(lines)
 
 
 TAIL_BYTES = 16384  # Read last 16KB to find final timestamp past trailing metadata
@@ -96,9 +109,19 @@ def process_file(filepath):
         if result:
             result["file"] = filepath
             result["size"] = size
-            last_ts = get_last_timestamp(filepath, size)
-            if last_ts:
-                result["last_ts"] = last_ts
+            if result["platform"] == "cursor":
+                # Cursor transcripts have no timestamps in JSONL.
+                # Use file modification time as the best available signal.
+                # Derive session ID from the parent directory name (UUID).
+                mtime = os.path.getmtime(filepath)
+                from datetime import datetime, timezone
+
+                result["ts"] = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+                result["session"] = os.path.basename(os.path.dirname(filepath))
+            else:
+                last_ts = get_last_timestamp(filepath, size)
+                if last_ts:
+                    result["last_ts"] = last_ts
             return result, None
         else:
             return None, filepath
