@@ -129,28 +129,44 @@ def process_file(filepath):
         return None, filepath
 
 
-# Collect file arguments (everything that isn't a flag)
-files = [a for a in sys.argv[1:] if not a.startswith("-")]
+# Parse arguments: files and optional --cwd-filter <substring>
+files = []
+cwd_filter = None
+args = sys.argv[1:]
+i = 0
+while i < len(args):
+    if args[i] == "--cwd-filter" and i + 1 < len(args):
+        cwd_filter = args[i + 1]
+        i += 2
+    elif not args[i].startswith("-"):
+        files.append(args[i])
+        i += 1
+    else:
+        i += 1
 
 if files:
     # Batch mode: process all files
     processed = 0
     parse_errors = 0
+    filtered = 0
     for filepath in files:
         if not filepath.endswith(".jsonl"):
             continue
         result, error = process_file(filepath)
         processed += 1
         if result:
+            # Apply CWD filter: skip Codex sessions from other repos
+            if cwd_filter and result.get("cwd") and cwd_filter not in result["cwd"]:
+                filtered += 1
+                continue
             print(json.dumps(result))
         elif error:
             parse_errors += 1
 
-    print(json.dumps({
-        "_meta": True,
-        "files_processed": processed,
-        "parse_errors": parse_errors,
-    }))
+    meta = {"_meta": True, "files_processed": processed, "parse_errors": parse_errors}
+    if filtered:
+        meta["filtered_by_cwd"] = filtered
+    print(json.dumps(meta))
 else:
     # Single-file stdin mode (backward compatible)
     lines = list(sys.stdin)

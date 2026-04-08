@@ -96,7 +96,7 @@ Three unified scripts handle JSONL parsing for Claude Code, Codex, and Cursor. E
 
 **Execute scripts by path, not by reading them into context.** Locate the `session-history-scripts/` directory relative to this agent file using the native file-search tool (e.g., Glob), then run scripts directly: `python3 /resolved/path/to/extract-metadata.py <args>`. Do not use the Read tool to load script content and pass it via `python3 -c` — that puts ~5K tokens of script source into the conversation history where it gets replayed on every subsequent tool call.
 
-- `extract-metadata.py` -- Extracts session metadata from one or many files. Supports batch mode: pass all file paths as arguments in a single invocation. Outputs one JSON line per file plus a `_meta` summary. Usage: `python3 <script-path> /path/to/*.jsonl`
+- `extract-metadata.py` -- Extracts session metadata from one or many files. Supports batch mode: pass all file paths as arguments in a single invocation. Outputs one JSON line per file plus a `_meta` summary. Pass `--cwd-filter <repo-name>` to filter Codex sessions at the script level (Codex sessions from other repos are excluded from output, keeping context small). Usage: `python3 <script-path> --cwd-filter <repo-name> /path/to/*.jsonl`
 - `extract-skeleton.py` -- Extracts the conversation skeleton: user messages, assistant text, and collapsed tool call summaries. Filters out raw tool inputs/outputs, thinking/reasoning blocks, and framework wrapper tags. Usage: `cat <file> | python3 <script-path>`
 - `extract-errors.py` -- Extracts error signals. Claude Code: tool results with `is_error`. Codex: commands with non-zero exit codes. Cursor: no error extraction possible. Usage: `cat <file> | python3 <script-path>`
 
