@@ -34,6 +34,8 @@ You produce up to two outputs depending on whether a run ID was provided:
 The full file preserves detail for downstream consumers (headless output, debugging).
 The compact return keeps the orchestrator's context lean for merge and synthesis.
 
+The schema below describes the **full artifact file format** (all fields required). For the compact return, follow the field list above -- omit why_it_matters and evidence even though the schema marks them as required.
+
 {schema}
 
 Confidence rubric (0.0-1.0 scale):
