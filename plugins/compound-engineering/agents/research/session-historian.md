@@ -119,7 +119,7 @@ Determine the scan window from the Time Range table above, then discover and ext
 
 - **Claude Code (project-scoped):** `find ~/.claude/projects/<encoded-cwd>/ -maxdepth 1 -name "*.jsonl" -mtime -<days>` where `<encoded-cwd>` replaces `/` with `-` in the CWD, and `<days>` matches the scan window.
 - **Claude Code (all projects):** `find ~/.claude/projects/ -name "*.jsonl" -mtime -<days>`
-- **Codex:** `~/.codex/sessions/YYYY/MM/DD/*.jsonl` for date directories within the scan window. Also check `~/.agents/sessions/`. When project-scoped, filter metadata results to sessions whose `cwd` matches the current working directory.
+- **Codex:** `~/.codex/sessions/YYYY/MM/DD/*.jsonl` for date directories within the scan window. Also check `~/.agents/sessions/`. When project-scoped, filter metadata results by **repo name**, not exact CWD. The same repo can appear under different paths (main checkout, Conductor worktrees, Claude Code worktrees). Derive the repo name from `git rev-parse --git-common-dir` (gives the real repo's `.git` path even from a worktree) and match Codex session CWDs that contain that repo folder name.
 - **Cursor:** `find ~/.cursor/projects/<encoded-cwd>/agent-transcripts/ -name "*.jsonl" -mtime -<days>`. Same CWD-encoding as Claude Code.
 
 Combine the results into a single invocation of `extract-metadata.py`:
