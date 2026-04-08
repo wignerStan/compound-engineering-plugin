@@ -24,6 +24,7 @@ The primary entry points for engineering work, invoked as slash commands:
 | `/ce:work` | Execute work items systematically |
 | `/ce:compound` | Document solved problems to compound team knowledge |
 | `/ce:compound-refresh` | Refresh stale or drifting learnings and decide whether to keep, update, replace, or archive them |
+| `/ce-sessions` | Ask questions about session history across Claude Code, Codex, and Cursor |
 
 ### Git Workflow
 
@@ -151,6 +152,7 @@ Agents are specialized subagents invoked by skills — you typically don't call 
 | `issue-intelligence-analyst` | Analyze GitHub issues to surface recurring themes and pain patterns |
 | `learnings-researcher` | Search institutional learnings for relevant past solutions |
 | `repo-research-analyst` | Research repository structure and conventions |
+| `session-historian` | Search prior Claude Code, Codex, and Cursor sessions for related investigation context |
 | `slack-researcher` | Search Slack for organizational context relevant to the current task |
 
 ### Design
