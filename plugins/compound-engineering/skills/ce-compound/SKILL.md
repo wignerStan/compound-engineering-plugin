@@ -78,11 +78,16 @@ and codebase findings take priority over these notes.
 
 If no relevant entries are found, proceed to Phase 1 without passing memory context.
 
-### Phase 1: Parallel Research
+### Phase 1: Research
+
+Launch research subagents. Each returns text data to the orchestrator.
+
+**Dispatch order:**
+- Launch `Context Analyzer`, `Solution Extractor`, and `Related Docs Finder` in parallel (background)
+- Then dispatch `session-historian` in foreground — it reads session files outside the working directory that background agents may not have access to
+- The foreground dispatch runs while the background agents work, adding no wall-clock time
 
 <parallel_tasks>
-
-Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 
 #### 1. **Context Analyzer**
    - Extracts conversation history
@@ -149,8 +154,11 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
 
    Prefer the `gh` CLI for searching related issues: `gh issue list --search "<keywords>" --state all --limit 5`. If `gh` is not installed, fall back to the GitHub MCP tools (e.g., `unblocked` data_retrieval) if available. If neither is available, skip GitHub issue search and note it was skipped in the output.
 
-#### 4. **Session Historian**
+</parallel_tasks>
+
+#### 4. **Session Historian** (foreground, after launching the above)
    - Dispatched as `compound-engineering:research:session-historian`
+   - Dispatch in **foreground** — this agent reads session files outside the working directory (`~/.claude/projects/`, `~/.codex/sessions/`, `~/.cursor/projects/`) which background agents may not have access to
    - Searches prior Claude Code, Codex, and Cursor sessions for the same project to find related investigation context
    - Correlates sessions by git branch (Claude Code) and working directory (Codex, Cursor)
    - In the dispatch prompt, pass:
@@ -168,8 +176,6 @@ Launch these subagents IN PARALLEL. Each returns text data to the orchestrator.
        ```
    - Omit the `mode` parameter so the user's configured permission settings apply
    - Returns: structured digest of findings from prior sessions, or "no relevant prior sessions" if none found
-
-</parallel_tasks>
 
 ### Phase 2: Assembly & Write
 
