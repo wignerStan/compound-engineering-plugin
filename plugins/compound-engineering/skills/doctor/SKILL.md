@@ -1,6 +1,6 @@
 ---
 name: doctor
-description: Diagnose Compound Engineering plugin environment health. Checks CLI dependencies, MCP servers, env vars, plugin version, and .gitignore. Use when troubleshooting missing tools, verifying setup, or before onboarding.
+description: Diagnose Compound Engineering plugin environment health. Checks CLI dependencies, MCP servers, env vars, plugin version, obsolete repo-local config, and gitignore guidance. Use when troubleshooting missing tools, verifying setup, or before onboarding.
 disable-model-invocation: true
 ---
 
@@ -20,7 +20,7 @@ If a version is found, pass it to the script via `--version`. Otherwise omit the
 
 ## Step 2: Run the Health Check Script
 
-Run the bundled check script. Do not perform manual dependency checks -- the script handles all CLI tools, environment variables, .gitignore, and project checks in one pass.
+Run the bundled check script. Do not perform manual dependency checks -- the script handles all CLI tools, environment variables, repo-local CE file checks, and `.gitignore` guidance in one pass.
 
 ```bash
 bash scripts/check-health --version VERSION
@@ -40,29 +40,24 @@ Display the script's output to the user.
 
 The script cannot detect MCP servers (that requires agent-level introspection). After running the script, check for these MCP services:
 
-1. **context7** -- Check whether `resolve-library-id` or `get-library-docs` tools from the context7 MCP server are available in the current session. If available, note "context7 MCP server loaded" alongside the CLI result from the script.
+1. **Figma MCP** -- Check whether any Figma MCP tools are available. Report as informational only.
 
-2. **Figma MCP** -- Check whether any Figma MCP tools are available. Report as informational only.
-
-3. **XcodeBuildMCP** -- Check whether any XcodeBuildMCP tools are available. Report as informational only.
+2. **XcodeBuildMCP** -- Check whether any XcodeBuildMCP tools are available. Report as informational only.
 
 Append MCP results after the script output using the same emoji format:
 
 ```
  MCP Servers
-  🟢  context7 (MCP server loaded -- ctx7 CLI not required)
   ➖  Figma MCP (not detected, optional)
   ➖  XcodeBuildMCP (not detected, optional)
 ```
-
-For context7: if MCP is available, note that the ctx7 CLI is not required. If neither MCP nor CLI is available, highlight this as a gap.
 
 ## Step 4: Summary
 
 After presenting the combined report (script output + MCP results), display:
 
 ```
-Run /setup to install missing dependencies and configure environment variables.
+Run /setup to install missing dependencies, clean obsolete repo-local CE files, and configure environment variables.
 Run /doctor anytime to re-check.
 ```
 

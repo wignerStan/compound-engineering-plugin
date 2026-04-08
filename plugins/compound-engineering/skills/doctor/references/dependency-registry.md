@@ -68,18 +68,6 @@ These are opt-in during `/setup`. Install if you use the related skills.
 - **Project:** https://ffmpeg.org
 - **Used by:** feature-video
 
-### ctx7
-
-- **Description:** Context7 CLI for fetching up-to-date library documentation
-- **Tier:** optional
-- **Check:** `command -v ctx7`
-- **Check MCP:** Attempt to use the `resolve-library-id` tool from the context7 MCP server. If the tool is available in the current session, context7 MCP is loaded.
-- **Install:** `npm install -g ctx7`
-- **Project:** https://github.com/nichochar/context7
-- **Used by:** deepen-plan, framework-docs-researcher, best-practices-researcher
-- **Env vars:** CONTEXT7_API_KEY (recommended, prevents anonymous rate limiting)
-- **Note:** This dependency has both an MCP server variant (bundled with the plugin) and a CLI variant. If the MCP server is loaded, the CLI is not needed. Check MCP availability first.
-
 ---
 
 ## External Services (Detect-Only)
@@ -109,14 +97,6 @@ These cannot be auto-installed. doctor reports their status as informational gui
 ## Environment Variables
 
 These are checked independently and also prompted per-dependency when relevant.
-
-### CONTEXT7_API_KEY
-
-- **Description:** API key for Context7 to avoid anonymous rate limits
-- **Check:** Check if the variable is set in the current environment
-- **Related dep:** ctx7 / context7 MCP
-- **How to get:** Sign up at https://context7.com for an API key
-- **Persistence guidance:** Add to shell profile (`~/.zshrc` or `~/.bashrc`) or agent settings
 
 ### GEMINI_API_KEY
 
