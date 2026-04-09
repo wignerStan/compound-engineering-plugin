@@ -40,6 +40,10 @@ Display the script's output to the user.
 
 ### Step 3: Evaluate Results
 
+**Platform detection (pre-resolved):** !`[ -n "${CLAUDE_PLUGIN_ROOT}" ] && echo "CLAUDE_CODE" || echo "OTHER"`
+
+If the line above resolved to `CLAUDE_CODE`, this is a Claude Code session and `/ce-update` is available. Otherwise, omit any `/ce-update` references from output.
+
 After the diagnostic report, check whether:
 
 - any dependencies are missing (reported as red in the script output)
@@ -50,9 +54,11 @@ If everything is installed, no repo-local cleanup is needed, and `.compound-engi
 
 ```
 Everything looks good -- all tools installed, config in place.
-Run /ce-setup anytime to re-check dependencies, or /ce-update to grab the latest plugin version.
+Run /ce-setup anytime to re-check dependencies.
 Setup complete.
 ```
+
+If this is a Claude Code session, append to the message: "Run /ce-update to grab the latest plugin version."
 
 Stop here.
 
@@ -137,5 +143,7 @@ Setup complete.
   Installed: agent-browser, gh, jq
   Skipped:   rtk
 
-Run /ce-setup anytime to re-check dependencies, or /ce-update to grab the latest plugin version.
+Run /ce-setup anytime to re-check dependencies.
 ```
+
+If this is a Claude Code session (per platform detection in Step 3), append: "Run /ce-update to grab the latest plugin version."
