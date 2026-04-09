@@ -39,12 +39,19 @@ All tokens are optional. When absent, fall back to the resolution chain below.
 After extracting tokens from arguments, resolve the delegation state using this precedence chain:
 
 1. **Argument flag** -- `delegate:codex` or `delegate:local` from the current invocation (highest priority)
-2. **Config file** -- Read `.compound-engineering/config.local.yaml` in the repo root. Extract `work_delegate` from the YAML keys. Value `codex` activates delegation; `false` deactivates.
+2. **Config file** -- extract settings from the config block below. Value `codex` for `work_delegate` activates delegation; `false` deactivates.
 3. **Hard default** -- `false` (delegation off)
 
-To read the config file: open `.compound-engineering/config.local.yaml` and parse it as YAML. If the file is missing, empty, malformed, or any setting has an unrecognized value, fall through to the hard default for that setting.
+**Config (pre-resolved):**
+!`cat .compound-engineering/config.local.yaml 2>/dev/null || echo '__NO_CONFIG__'`
 
-Also read from the config file when present:
+If the block above contains YAML key-value pairs, extract values for the keys listed below.
+If it shows `__NO_CONFIG__`, the file does not exist — all settings fall through to defaults.
+If it shows an unresolved command string, read `.compound-engineering/config.local.yaml` using the native file-read tool (e.g., Read in Claude Code, read_file in Codex). If the file does not exist, all settings fall through to defaults.
+
+If any setting has an unrecognized value, fall through to the hard default for that setting.
+
+Config keys:
 - `work_delegate_consent` -- `true` or default `false`
 - `work_delegate_sandbox` -- `yolo` (default) or `full-auto`
 - `work_delegate_decision` -- `auto` (default) or `ask`
