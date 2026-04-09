@@ -197,8 +197,6 @@ Determine how to proceed based on what was provided in `<input_document>`.
 
    After each subagent completes, update the plan checkboxes and task list before dispatching the next dependent unit.
 
-   For genuinely large plans needing persistent inter-agent communication (agents challenging each other's approaches, shared coordination across 10+ tasks), see Swarm Mode below which uses Agent Teams.
-
 ### Phase 2: Execute
 
 1. **Task Execution Loop**
@@ -437,14 +435,6 @@ Determine how to proceed based on what was provided in `<input_document>`.
    - Link to PR (if one was created)
    - Note any follow-up work needed
    - Suggest next steps if applicable
-
----
-
-## Swarm Mode with Agent Teams (Optional)
-
-For genuinely large plans (10+ tasks) where agents need persistent specialized roles and inter-agent communication, read `references/swarm-mode.md`. Agent teams are experimental and require explicit user opt-in.
-
-**Mutual exclusion with Codex delegation:** Delegation mode and swarm mode are mutually exclusive. When `delegation_active` is true, emit: "Codex delegation active -- swarm mode unavailable."
 
 ---
 

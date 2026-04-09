@@ -154,13 +154,6 @@ describe("ce:work-beta codex delegation contract", () => {
     expect(content).toContain("If delegation_active: branch to the Codex Delegation Execution Loop")
   })
 
-  test("swarm mode has mutual exclusion note", async () => {
-    const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/SKILL.md")
-
-    expect(content).toContain("Mutual exclusion with Codex delegation")
-    expect(content).toContain("swarm mode are mutually exclusive")
-  })
-
   test("delegation reference has all required sections", async () => {
     const content = await readRepoFile("plugins/compound-engineering/skills/ce-work-beta/references/codex-delegation-workflow.md")
 
