@@ -80,7 +80,14 @@ This file contains the shipping workflow (Phase 3-4). Load it only when all Phas
    - **Modified screens**: Before AND after screenshots
    - **Design implementation**: Screenshot showing Figma design match
 
-2. **Commit and Create Pull Request**
+2. **Update Plan Status**
+
+   If the input document has YAML frontmatter with a `status` field, update it to `completed`:
+   ```
+   status: active  ->  status: completed
+   ```
+
+3. **Commit and Create Pull Request**
 
    Load the `git-commit-push-pr` skill to handle committing, pushing, and PR creation. The skill handles convention detection, branch safety, logical commit splitting, adaptive PR descriptions, and attribution badges.
 
@@ -92,13 +99,6 @@ This file contains the shipping workflow (Phase 3-4). Load it only when all Phas
    - The Post-Deploy Monitoring & Validation section (see Phase 3 Step 4)
 
    If the user prefers to commit without creating a PR, load the `git-commit` skill instead.
-
-3. **Update Plan Status**
-
-   If the input document has YAML frontmatter with a `status` field, update it to `completed`:
-   ```
-   status: active  ->  status: completed
-   ```
 
 4. **Notify User**
    - Summarize what was completed
