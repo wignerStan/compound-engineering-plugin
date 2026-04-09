@@ -185,7 +185,7 @@ Write the result schema to `.context/compound-engineering/codex-delegation/<run-
 
 Each batch's result is written to `.context/compound-engineering/codex-delegation/<run-id>/result-batch-<batch-num>.json` via the `-o` flag. On plan failure, files are left in place for debugging.
 
-**Known limitation:** `--output-schema` only works with `gpt-5` family models (e.g., `o4-mini`, `gpt-5.4`), not `gpt-5-codex` or `codex-` prefixed models (Codex CLI bug #4181). If the result JSON is absent or malformed after a successful exit code, classify as task failure.
+If the result JSON is absent or malformed after a successful exit code, classify as task failure.
 
 ## Execution Loop
 
