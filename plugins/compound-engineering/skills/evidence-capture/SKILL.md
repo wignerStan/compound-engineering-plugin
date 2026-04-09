@@ -1,0 +1,192 @@
+---
+name: evidence-capture
+description: "Capture visual evidence (GIF demos, terminal recordings, screenshots) for PR descriptions. Use when shipping UI changes, CLI features, or any work with observable behavior that benefits from visual proof. Also use when asked to add a demo, record a GIF, screenshot a feature, show what changed visually, add proof to a PR, or create a before/after comparison."
+argument-hint: "[what to capture, e.g. 'the new settings page' or 'CLI output of the migrate command']"
+---
+
+# Evidence Capture
+
+Detect project type, recommend a capture tier, record visual evidence, upload to a public URL, and return markdown for PR inclusion.
+
+**Evidence means USING THE PRODUCT, not running tests.** "I ran npm test" is test evidence. Evidence capture is running the actual CLI command, opening the web app, making the API call, or triggering the feature. The distinction is absolute -- test output is never labeled "Demo" or "Screenshots."
+
+If real product usage is impractical (requires API keys, cloud deploy, paid services, bot tokens), say so explicitly: "Real evidence would require [X]. Recommending [fallback approach] instead." Do not silently skip to "no evidence needed" or substitute test output.
+
+Never generate fake or placeholder image/GIF URLs. If upload fails, report the failure.
+
+## Arguments
+
+Parse `$ARGUMENTS`:
+- **What to capture**: A description of the feature or behavior to demonstrate. If provided, use it to guide which pages to visit, commands to run, or states to capture.
+- If blank, infer what to capture from recoverable branch or PR context. If the target remains ambiguous after that, ask the user what they want to demonstrate before proceeding.
+
+## Step 0: Discover Capture Target
+
+Treat target discovery as stateless and branch-aware. The agent may be invoked in a fresh session after the work was already done, so do not rely on conversation history or assume the caller knows the right artifact.
+
+If invoked by another skill, treat the caller-provided target as a hint, not proof. Rerun target discovery and validation before capturing anything.
+
+Use the lightest available context to identify the best evidence target:
+
+- Current branch name
+- Open PR title and description, if one exists
+- Changed files and diff against the base branch
+- Recent commits
+- A plan file only when it is obviously referenced by the branch, PR, arguments, or caller context
+
+Form a capture hypothesis: "The best evidence appears to be [behavior]."
+
+Proceed without asking only when there is exactly one high-confidence observable behavior and a plausible way to exercise it from the workspace. Ask the user what to demonstrate when multiple behaviors are plausible, the diff does not reveal how to exercise the behavior, or the requested target cannot be mapped to a product surface.
+
+Skip evidence with a clear reason when the diff is docs-only, markdown-only, config-only, CI-only, test-only, or a pure internal refactor with no observable output change.
+
+## Step 1: Exercise the Feature
+
+Before capturing anything, verify the feature works by actually using it:
+
+- **CLI tool**: Run the new/changed command and confirm the output is correct
+- **Web app**: Navigate to the new/changed page and confirm it renders correctly
+- **Library**: Run example code using the new/changed API
+- **Bug fix**: Reproduce the original bug scenario and confirm it's fixed
+
+Use the workspace where the feature was built. Do not reinstall from scratch. If setup requires credentials or services, use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini) to ask the user.
+
+## Step 2: Detect Project Type
+
+Read `references/project-detection.md` and run the detection logic. Store the result as one of: `web-app`, `cli-tool`, `library`, `desktop-app`, `text-only`.
+
+## Step 3: Assess Change Type
+
+Step 0 already handled the "no observable behavior" early exit. This step classifies changes that DO have observable behavior into `motion` or `states` to guide tier selection.
+
+If arguments describe what to capture, classify based on the description. Otherwise, use the diff context from Step 0.
+
+**Change classification:**
+
+1. **Involves motion or interaction?** (animations, typing flows, drag-and-drop, real-time updates, continuous CLI output) -> classify as `motion`.
+2. **Involves discrete states?** (before/after UI, new page, command with output, API response) -> classify as `states`.
+
+| Change characteristic | Classification |
+|---|---|
+| Animations, typing, drag-and-drop, streaming output | `motion` |
+| New UI, before/after, command output, API responses | `states` |
+
+**Feature vs bug fix -- what to demonstrate:**
+
+- **New feature (`feat`)**: Demonstrate the feature working. Show the hero moment -- the feature doing its thing.
+- **Bug fix (`fix`)**: Show before AND after. Reproduce the original broken state (if possible) then show the fix. If the broken state can't be reproduced (already fixed in the workspace), capture the fixed state and describe what was broken.
+
+Infer feat vs fix from commit messages, branch name, or plan file frontmatter (`type: feat` or `type: fix`). If unclear, ask.
+
+## Step 4: Tool Preflight
+
+Check which capture tools are available. Run each check independently:
+
+```bash
+command -v agent-browser
+```
+
+```bash
+command -v vhs
+```
+
+```bash
+command -v silicon
+```
+
+```bash
+command -v ffmpeg
+```
+
+Print a preflight summary:
+
+```
+Evidence capture -- tool preflight:
+  agent-browser: [installed/missing]  (browser reel, static screenshots)
+  vhs:           [installed/missing]  (terminal recording) -- install: brew install charmbracelet/tap/vhs
+  silicon:       [installed/missing]  (screenshot reel) -- install: brew install silicon
+  ffmpeg:        [installed/missing]  (GIF stitching, frame normalization) -- install: brew install ffmpeg
+```
+
+ffmpeg (with ffprobe) handles both GIF stitching and frame dimension normalization. No additional dependencies are needed for the pipeline — `scripts/capture-evidence.sh` wraps the multi-step ffmpeg workflow into single commands.
+
+## Step 5: Create Run Directory
+
+Create a per-run scratch directory before writing any files:
+
+```bash
+mkdir -p .context/compound-engineering/evidence-capture
+```
+
+```bash
+mktemp -d .context/compound-engineering/evidence-capture/run-XXXXXX
+```
+
+Use the output as `RUN_DIR`. Pass this concrete run directory to every tier reference.
+
+## Step 6: Recommend Tier and Ask User
+
+Map project type, change classification, and available tools to a tier recommendation:
+
+| Project Type | Change Type | Tools Available | Recommended Tier |
+|---|---|---|---|
+| web-app | motion/states | agent-browser + ffmpeg | **Browser reel** |
+| web-app | motion/states | agent-browser only | **Static screenshots** |
+| cli-tool | motion | vhs | **Terminal recording** |
+| cli-tool | motion | silicon + ffmpeg (no vhs) | **Screenshot reel** |
+| cli-tool | states | silicon + ffmpeg | **Screenshot reel** |
+| cli-tool | states | vhs (no silicon) | **Terminal recording** |
+| cli-tool | (any) | none of above | **Static screenshots** |
+| desktop-app | motion/states | agent-browser + ffmpeg | **Browser reel** (via localhost/CDP) |
+| desktop-app | motion/states | no agent-browser | **Static screenshots** |
+| library | (any) | (any) | **Static screenshots** |
+
+Present options to the user via the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini). Show only tiers whose required tools passed preflight. Mark the recommended tier.
+
+**Question:** "How should evidence be captured for this change?"
+
+**Options** (show only where tools are available, order by recommendation):
+1. **Browser reel** -- Agent-browser screenshots stitched into animated GIF. Best for web apps.
+2. **Terminal recording** -- VHS terminal recording to GIF. Best for CLI tools with interaction/motion.
+3. **Screenshot reel** -- Styled terminal frames stitched into animated GIF. Best for discrete CLI steps.
+4. **Static screenshots** -- Individual PNGs. Fallback when other tools are unavailable.
+5. **No evidence needed** -- The diff speaks for itself. Best for text-only or config changes.
+
+If the question tool is unavailable (background agent, batch mode), present the numbered options and wait for the user's reply before proceeding.
+
+## Step 7: Execute Selected Tier
+
+Carry the capture hypothesis from Step 0 and the feature exercise results from Step 1 into tier execution — these determine which specific pages to visit, commands to run, or states to screenshot. Substitute `[RUN_DIR]` in the tier reference with the concrete path from Step 5.
+
+Load the appropriate reference file for the selected tier:
+
+- **Browser reel** -> Read `references/tier-browser-reel.md`
+- **Terminal recording** -> Read `references/tier-terminal-recording.md`
+- **Screenshot reel** -> Read `references/tier-screenshot-reel.md`
+- **Static screenshots** -> Read `references/tier-static-screenshots.md`
+- **No evidence needed** -> Skip to output. Set `evidence_url` to null, `evidence_label` to null.
+
+**Runtime failure fallback:** If the selected tier fails during execution (tool crashes, server not accessible, recording produces empty output), fall back to the next available tier rather than failing entirely. The fallback order is: browser reel -> static screenshots, terminal recording -> screenshot reel -> static screenshots, screenshot reel -> static screenshots. Static screenshots is the terminal fallback -- if even that fails, report the failure and let the user decide.
+
+## Step 8: Upload and Approval
+
+After the selected tier produces an artifact, read `references/upload-and-approval.md` for upload to a public host, user approval gate, and markdown embed generation.
+
+## Output
+
+Return these values to the caller (e.g., shipping-workflow):
+
+```
+=== Evidence Capture Complete ===
+Tier: [browser-reel / terminal-recording / screenshot-reel / static / skipped]
+URL: [public URL or "none"]
+Label: [Demo / Screenshots / none]
+Embed: [markdown image syntax or empty]
+=== End Evidence ===
+```
+
+**Labeling rules (strict):**
+- Browser reel, terminal recording, screenshot reel -> **"Demo"**
+- Static screenshots -> **"Screenshots"**
+- No evidence -> nothing
+- Test output is never called "Demo" or "Screenshots"

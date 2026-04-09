@@ -10,7 +10,6 @@ tags:
   - session-persistence
   - lightpanda
 related_to:
-  - plugins/compound-engineering/skills/feature-video/SKILL.md
   - plugins/compound-engineering/skills/agent-browser/SKILL.md
   - plugins/compound-engineering/skills/agent-browser/references/authentication.md
   - plugins/compound-engineering/skills/agent-browser/references/session-management.md
@@ -20,9 +19,9 @@ related_to:
 
 ## Problem
 
-agent-browser needs authenticated access to GitHub for workflows like the native video
-upload in the feature-video skill. Multiple authentication approaches were evaluated
-before finding one that works reliably with 2FA, SSO, and OAuth.
+agent-browser needs authenticated access to GitHub for workflows like native attachment
+uploads from a PR page. Multiple authentication approaches were evaluated before
+finding one that works reliably with 2FA, SSO, and OAuth.
 
 ## Investigation
 
@@ -87,8 +86,8 @@ daemon ignores new flags like `--engine`, `--headed`, or `--session-name`.
 ### Session lifetime
 
 Cookies expire when GitHub invalidates them (typically weeks). Periodic re-authentication
-is required. The feature-video skill handles this by checking session validity before
-the upload step and prompting for re-auth only when needed.
+is required. Workflows using this pattern should check session validity immediately
+before the upload step and prompt for re-auth only when needed.
 
 ### Auth vault limitations
 
@@ -141,7 +140,6 @@ a repo tree.
 
 ## Integration Points
 
-This pattern is used by:
-- `feature-video` skill (GitHub native video upload)
-- Any future skill requiring authenticated GitHub browser access
+This pattern is retained for:
+- Future skills requiring authenticated GitHub browser access
 - Potential use for other OAuth-protected services (same pattern, different session name)

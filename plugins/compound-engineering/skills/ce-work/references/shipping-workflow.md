@@ -50,35 +50,11 @@ This file contains the shipping workflow (Phase 3-4). Load it only when all Phas
 
 ## Phase 4: Ship It
 
-1. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
+1. **Prepare Evidence Context**
 
-   For **any** design changes, new views, or UI modifications, capture and upload screenshots before creating the PR:
+   Do not invoke `evidence-capture` directly in this step. Evidence capture belongs to the PR creation or PR description update flow, where the final PR diff and description context are available.
 
-   **Step 1: Start dev server** (if not running)
-   ```bash
-   bin/dev  # Run in background
-   ```
-
-   **Step 2: Capture screenshots with agent-browser CLI**
-   ```bash
-   agent-browser open http://localhost:3000/[route]
-   agent-browser snapshot -i
-   agent-browser screenshot output.png
-   ```
-   See the `agent-browser` skill for detailed usage.
-
-   **Step 3: Upload using imgup skill**
-   ```bash
-   skill: imgup
-   # Then upload each screenshot:
-   imgup -h pixhost screenshot.png  # pixhost works without API key
-   # Alternative hosts: catbox, imagebin, beeimg
-   ```
-
-   **What to capture:**
-   - **New screens**: Screenshot of the new UI
-   - **Modified screens**: Before AND after screenshots
-   - **Design implementation**: Screenshot showing Figma design match
+   Note whether the completed work has observable behavior (UI rendering, CLI output, API/library behavior with a runnable example, generated artifacts, or workflow output). The `git-commit-push-pr` skill will ask whether to capture evidence only when evidence is possible.
 
 2. **Update Plan Status**
 
@@ -94,7 +70,7 @@ This file contains the shipping workflow (Phase 3-4). Load it only when all Phas
    When providing context for the PR description, include:
    - The plan's summary and key decisions
    - Testing notes (tests added/modified, manual testing performed)
-   - Screenshot URLs from step 1 (if applicable)
+   - Evidence context from step 1, so `git-commit-push-pr` can decide whether to ask about capturing evidence
    - Figma design link (if applicable)
    - The Post-Deploy Monitoring & Validation section (see Phase 3 Step 4)
 
@@ -116,11 +92,11 @@ Before creating PR, verify:
 - [ ] Linting passes (use linting-agent)
 - [ ] Code follows existing patterns
 - [ ] Figma designs match implementation (if applicable)
-- [ ] Before/after screenshots captured and uploaded (for UI changes)
+- [ ] Evidence decision handled by `git-commit-push-pr` when the change has observable behavior
 - [ ] Commit messages follow conventional format
 - [ ] PR description includes Post-Deploy Monitoring & Validation section (or explicit no-impact rationale)
 - [ ] Code review completed (inline self-review or full `ce:review`)
-- [ ] PR description includes summary, testing notes, and screenshots
+- [ ] PR description includes summary, testing notes, and evidence when captured
 - [ ] PR description includes Compound Engineered badge with accurate model and harness
 
 ## Code Review Tiers

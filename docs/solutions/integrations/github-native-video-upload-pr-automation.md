@@ -7,10 +7,8 @@ tags:
   - video-embedding
   - agent-browser
   - playwright
-  - feature-video
   - pr-description
 related_to:
-  - plugins/compound-engineering/skills/feature-video/SKILL.md
   - plugins/compound-engineering/skills/agent-browser/SKILL.md
   - plugins/compound-engineering/skills/agent-browser/references/authentication.md
 ---
@@ -94,7 +92,7 @@ is persisted even if the form is never submitted.
 
 ## What Was Removed
 
-The following approaches were removed from the feature-video skill:
+The following approaches were removed from the legacy feature-video workflow:
 
 - R2/rclone setup and configuration
 - Release asset upload flow (`gh release upload`)
