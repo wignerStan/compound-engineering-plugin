@@ -41,7 +41,11 @@ def check_tool(name):
 
 
 def run_cmd(cmd, timeout=120):
-    result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+    try:
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, check=False)
+    except subprocess.TimeoutExpired:
+        print(f"ERROR: Command timed out after {timeout}s: {' '.join(cmd)}", file=sys.stderr)
+        return subprocess.CompletedProcess(cmd, returncode=1, stdout="", stderr=f"Timed out after {timeout}s")
     if result.returncode != 0:
         print(f"ERROR: Command failed (exit {result.returncode}): {' '.join(cmd)}", file=sys.stderr)
         if result.stderr:
@@ -331,12 +335,14 @@ def _stitch_frames(output, frames, duration=3.0):
         normalized = []
         for i, f in enumerate(frames):
             out = os.path.join(tmpdir, f"frame_{i:03d}.png")
-            run_cmd([
+            result = run_cmd([
                 "ffmpeg", "-y", "-v", "error", "-i", f,
                 "-vf", f"scale={max_w}:{max_h}:force_original_aspect_ratio=decrease,"
                        f"pad={max_w}:{max_h}:(ow-iw)/2:0:color=#0d1117",
                 out,
             ])
+            if result.returncode != 0:
+                die(f"ffmpeg failed to normalize frame: {f}")
             normalized.append(out)
 
         print(f"  Normalized {len(normalized)} frames")
@@ -479,12 +485,14 @@ def cmd_terminal_recording(args):
                 rewritten.append(f'Output "{output_path}"')
             else:
                 rewritten.append(line)
-        tmp_tape = tape_path + ".tmp"
+        fd, tmp_tape = tempfile.mkstemp(suffix=".tape", prefix="vhs-")
+        os.close(fd)
         Path(tmp_tape).write_text("\n".join(rewritten) + "\n")
         actual_tape = tmp_tape
     elif output_path and not tape_has_output:
         # No Output in tape — prepend one
-        tmp_tape = tape_path + ".tmp"
+        fd, tmp_tape = tempfile.mkstemp(suffix=".tape", prefix="vhs-")
+        os.close(fd)
         Path(tmp_tape).write_text(f'Output "{output_path}"\n{tape_content}')
         actual_tape = tmp_tape
 
