@@ -20,7 +20,7 @@ If the question tool is unavailable (headless/background mode), present the numb
 After the user approves the local artifact, upload the evidence file (GIF or PNG) using the capture pipeline script. Set `ARTIFACT_PATH` to the approved GIF or PNG path:
 
 ```bash
-python3 scripts/capture-evidence.py upload [ARTIFACT_PATH]
+python3 scripts/capture-demo.py upload [ARTIFACT_PATH]
 ```
 
 The script uploads to catbox.moe, validates the response starts with `https://`, and retries once on failure. The last line of output is the public URL (e.g., `https://files.catbox.moe/abc123.gif`).

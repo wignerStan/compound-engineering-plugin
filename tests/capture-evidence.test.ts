@@ -8,9 +8,9 @@ const SCRIPT = path.join(
   "plugins",
   "compound-engineering",
   "skills",
-  "evidence-capture",
+  "demo-reel",
   "scripts",
-  "capture-evidence.py",
+  "capture-demo.py",
 )
 
 async function run(

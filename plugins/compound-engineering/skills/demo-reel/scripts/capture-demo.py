@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Evidence capture pipeline — deterministic helpers for the evidence-capture skill.
+Evidence capture pipeline — deterministic helpers for the demo-reel skill.
 
 Subcommands:
   preflight                          Check tool availability (JSON output)

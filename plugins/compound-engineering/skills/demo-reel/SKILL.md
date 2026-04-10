@@ -1,10 +1,10 @@
 ---
-name: evidence-capture
-description: "Capture visual evidence (GIF demos, terminal recordings, screenshots) for PR descriptions. Use when shipping UI changes, CLI features, or any work with observable behavior that benefits from visual proof. Also use when asked to add a demo, record a GIF, screenshot a feature, show what changed visually, add proof to a PR, or create a before/after comparison."
+name: demo-reel
+description: "Capture a visual demo reel (GIF, terminal recording, screenshots) for PR descriptions. Use when shipping UI changes, CLI features, or any work with observable behavior that benefits from visual proof. Also use when asked to add a demo, record a GIF, screenshot a feature, show what changed visually, create a demo reel, capture evidence, add proof to a PR, or create a before/after comparison."
 argument-hint: "[what to capture, e.g. 'the new settings page' or 'CLI output of the migrate command']"
 ---
 
-# Evidence Capture
+# Demo Reel
 
 Detect project type, recommend a capture tier, record visual evidence, upload to a public URL, and return markdown for PR inclusion.
 
@@ -56,7 +56,7 @@ Use the workspace where the feature was built. Do not reinstall from scratch. If
 Run the detection script:
 
 ```bash
-python3 scripts/capture-evidence.py detect
+python3 scripts/capture-demo.py detect
 ```
 
 This outputs JSON with `type` and `reason`. Store the `type` value (`web-app`, `cli-tool`, `library`, `desktop-app`, or `text-only`).
@@ -89,7 +89,7 @@ Infer feat vs fix from commit messages, branch name, or plan file frontmatter (`
 Run the preflight check:
 
 ```bash
-python3 scripts/capture-evidence.py preflight
+python3 scripts/capture-demo.py preflight
 ```
 
 This outputs JSON with boolean availability for each tool: `agent_browser`, `vhs`, `silicon`, `ffmpeg`, `ffprobe`. Print a human-readable summary for the user based on the result, noting install commands for missing tools (e.g., `brew install charmbracelet/tap/vhs` for vhs, `brew install silicon` for silicon, `brew install ffmpeg` for ffmpeg).
@@ -99,7 +99,7 @@ This outputs JSON with boolean availability for each tool: `agent_browser`, `vhs
 Create a per-run scratch directory in the OS temp location:
 
 ```bash
-mktemp -d -t evidence-capture-XXXXXX
+mktemp -d -t demo-reel-XXXXXX
 ```
 
 Use the output as `RUN_DIR`. Pass this concrete run directory to every tier reference. Evidence artifacts are ephemeral — they get uploaded to a public URL and then discarded. The OS temp directory is the right place for them, not the repo tree.
@@ -109,7 +109,7 @@ Use the output as `RUN_DIR`. Pass this concrete run directory to every tier refe
 Run the recommendation script with the project type from Step 2, change classification from Step 3, and preflight JSON from Step 4:
 
 ```bash
-python3 scripts/capture-evidence.py recommend --project-type [TYPE] --change-type [motion|states] --tools '[PREFLIGHT_JSON]'
+python3 scripts/capture-demo.py recommend --project-type [TYPE] --change-type [motion|states] --tools '[PREFLIGHT_JSON]'
 ```
 
 This outputs JSON with `recommended` (the best tier), `available` (list of tiers whose tools are present), and `reasoning`.

@@ -232,11 +232,11 @@ When evidence is possible, ask whether to include it in the PR description. Use 
 **Question:** "This PR has observable behavior. Capture evidence for the PR description?"
 
 **Options:**
-1. **Capture evidence now** -- load the `evidence-capture` skill with a concise target inferred from the diff, then include its returned embed in the PR body
+1. **Capture evidence now** -- load the `demo-reel` skill with a concise target inferred from the diff, then include its returned embed in the PR body
 2. **Use existing evidence** -- ask the user for the URL or markdown embed, then include it in the PR body
 3. **Skip evidence** -- write the PR description without an evidence section
 
-If the user chooses capture and `evidence-capture` returns skipped, failed, or empty output, do not add a placeholder section. Summarize the reason in the final user report.
+If the user chooses capture and `demo-reel` returns skipped, failed, or empty output, do not add a placeholder section. Summarize the reason in the final user report.
 
 Place returned evidence markdown before the Compound Engineering badge and near the part of the description it supports, typically after the summary or testing notes. Do not label test output as "Demo" or "Screenshots".
 
@@ -262,7 +262,7 @@ This frame becomes the opening of the description. For small+simple PRs (the siz
 Example:
 - Before: "CLI and library PRs got no visual evidence because the capture flow assumed a web app with a dev server."
 - After: "Evidence capture now works for any project type -- CLI tools, libraries, desktop apps."
-- Scope: "Shipped with git-commit-push-pr restructuring because evidence-capture integrates into the PR description flow."
+- Scope: "Shipped with git-commit-push-pr restructuring because demo-reel integrates into the PR description flow."
 
 #### Sizing the change
 
