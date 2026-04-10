@@ -249,9 +249,24 @@ Before writing the description, scan the commit list and classify each commit:
 
 Only feature commits inform the description. Fix-up commits are noise -- they describe the iteration process, not the end result. The full diff already includes whatever the fix-up commits changed, so their intent is captured without narrating them. When sizing and writing the description, mentally subtract fix-up commits: a branch with 12 commits but 9 fix-ups is a 3-commit PR in terms of description weight.
 
-This is the most important step. The description must be **adaptive** -- its depth should match the complexity of the change. A one-line bugfix does not need a table of performance results. A large architectural change should not be a bullet list.
+#### Frame the narrative before sizing
+
+After classifying commits, articulate the PR's narrative frame:
+
+1. **Before**: What was broken, limited, or impossible? (One sentence.)
+2. **After**: What's now possible or improved? (One sentence.)
+3. **Scope rationale** (only if the PR touches 2+ separable-looking concerns): Why do these ship together? (One sentence.)
+
+This frame becomes the opening of the description. For small+simple PRs (the sizing table routes to 1-2 sentences), the "after" sentence alone may be the entire description -- that's fine.
+
+Example:
+- Before: "CLI and library PRs got no visual evidence because the capture flow assumed a web app with a dev server."
+- After: "Evidence capture now works for any project type -- CLI tools, libraries, desktop apps."
+- Scope: "Shipped with git-commit-push-pr restructuring because evidence-capture integrates into the PR description flow."
 
 #### Sizing the change
+
+The description must be **adaptive** -- its depth should match the complexity of the change. A one-line bugfix does not need a table of performance results. A large architectural change should not be a bullet list.
 
 Assess the PR along two axes before writing, based on the full branch diff:
 
@@ -264,7 +279,7 @@ Use this to select the right description depth:
 |---|---|
 | Small + simple (typo, config, dep bump) | 1-2 sentences, no headers. Total body under ~300 characters. |
 | Small + non-trivial (targeted bugfix, behavioral change) | Short "Problem / Fix" narrative, ~3-5 sentences. Enough for a reviewer to understand *why* without reading the diff. No headers needed unless there are two distinct concerns. |
-| Medium feature or refactor | Summary paragraph, then a section explaining what changed and why. Call out design decisions. |
+| Medium feature or refactor | Open with the narrative frame (before/after/scope), then a section explaining what changed and why. Call out design decisions. |
 | Large or architecturally significant | Full narrative: problem context, approach chosen (and why), key decisions, migration notes or rollback considerations if relevant. |
 | Performance improvement | Include before/after measurements if available. A markdown table is effective here. |
 
@@ -272,7 +287,7 @@ Use this to select the right description depth:
 
 #### Writing principles
 
-- **Lead with value**: The first sentence should tell the reviewer *why this PR exists*, not *what files changed*. "Fixes timeout errors during batch exports" beats "Updated export_handler.py and config.yaml".
+- **Lead with value**: The first sentence should tell the reviewer *what's now possible or fixed*, not what was moved around. "Fixes timeout errors during batch exports" beats "Updated export_handler.py and config.yaml." The subtler failure is leading with the mechanism: "Replace the hardcoded capture block with a tiered skill" is technically purposeful but still doesn't tell the reviewer what changed for users. "Evidence capture now works for CLI tools and libraries, not just web apps" does.
 - **No orphaned opening paragraphs**: If the description uses `##` section headings anywhere, the opening summary must also be under a heading (e.g., `## Summary`). An untitled paragraph followed by titled sections looks like a missing heading. For short descriptions with no sections, a bare paragraph is fine.
 - **Describe the net result, not the journey**: The PR description is about the end state -- what changed and why. Do not include work-product details like bugs found and fixed during development, intermediate failures, debugging steps, iteration history, or refactoring done along the way. Those are part of getting the work done, not part of the result. If a bug fix happened during development, the fix is already in the diff -- mentioning it in the description implies it's a separate concern the reviewer should evaluate, when really it's just part of the final implementation. Exception: include process details only when they are critical for a reviewer to understand a design choice (e.g., "tried approach X first but it caused Y, so went with Z instead").
 - **When commits conflict, trust the final diff**: The commit list is supporting context, not the source of truth for the final PR description. If commit messages describe intermediate steps that were later revised or reverted (for example, "switch to gh pr list" followed by a later change back to `gh pr view`), describe the end state shown by the full branch diff. Do not narrate contradictory commit history as if all of it shipped.
@@ -288,7 +303,7 @@ Use this to select the right description depth:
   ```
 
 - **No empty sections**: If a section (like "Breaking Changes" or "Migration Guide") doesn't apply, omit it entirely. Do not include it with "N/A" or "None".
-- **Test plan -- only when it adds value**: Include a test plan section when the testing approach is non-obvious: edge cases the reviewer might not think of, verification steps for behavior that's hard to see in the diff, or scenarios that require specific setup. Omit it for straightforward changes where the tests are self-explanatory or where "run the tests" is the only useful guidance. A test plan for "verify the typo is fixed" is noise.
+- **Test plan -- only when it adds value**: Include a test plan section when the testing approach is non-obvious: edge cases the reviewer might not think of, verification steps for behavior that's hard to see in the diff, or scenarios that require specific setup. Omit it for straightforward changes where the tests are self-explanatory or where "run the tests" is the only useful guidance. A test plan for "verify the typo is fixed" is noise. When the branch adds new test files, name them with what they cover -- "`tests/capture-evidence.test.ts` -- 8 tests covering arg validation and ffmpeg stitch integration" is more useful than "bun test passes."
 
 #### Visual communication
 
