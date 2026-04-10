@@ -73,7 +73,7 @@ def cmd_preflight(_args):
 # --- Detect ---
 
 ELECTRON_DEPS = {"electron", "electron-builder", "electron-forge", "electron-vite", "electron-packager"}
-WEB_NODE_DEPS = {"react", "vue", "svelte", "astro", "next", "nuxt", "@angular/core", "solid-js", "remix", "gatsby"}
+WEB_NODE_DEPS = {"react", "vue", "svelte", "astro", "next", "nuxt", "@angular/core", "solid-js", "@remix-run/react", "gatsby"}
 WEB_RUBY_DEPS = {"rails", "sinatra", "hanami", "roda"}
 WEB_GO_DEPS = {"gin", "echo", "fiber", "chi", "gorilla/mux"}
 WEB_PYTHON_DEPS = {"flask", "django", "fastapi", "starlette", "tornado"}

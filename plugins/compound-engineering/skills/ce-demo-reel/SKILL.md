@@ -56,7 +56,7 @@ Use the workspace where the feature was built. Do not reinstall from scratch. If
 Run the detection script:
 
 ```bash
-python3 scripts/capture-demo.py detect
+python3 scripts/capture-demo.py detect --repo-root "$(git rev-parse --show-toplevel)"
 ```
 
 This outputs JSON with `type` and `reason`. Store the `type` value (`web-app`, `cli-tool`, `library`, `desktop-app`, or `text-only`).
