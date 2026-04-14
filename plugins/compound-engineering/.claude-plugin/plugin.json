@@ -1,7 +1,7 @@
 {
   "name": "compound-engineering",
   "version": "2.65.0",
-  "description": "AI-powered development tools for code review, research, design, and workflow automation.",
+  "description": "Research agents and knowledge management for institutional memory. Stripped fork of compound-engineering keeping only research agents and knowledge loop.",
   "author": {
     "name": "Kieran Klaassen",
     "email": "kieran@every.to",

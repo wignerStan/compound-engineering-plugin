@@ -1,0 +1,13 @@
+# Patch: ce-compound-no-review-refs
+# Removes references to review agents from skills/ce-compound/SKILL.md after stripping.
+#
+# Applied by strip-from-upstream.sh using sed commands.
+#
+# Removals:
+# 1. Phase 3 "Optional Enhancement" parallel_tasks block (review agent dispatches)
+# 2. "Code Quality & Review" section (kieran reviewers, code-simplicity, pattern-recognition)
+# 3. "Specific Domain Experts" section (performance-oracle, security-sentinel, data-integrity-guardian)
+#
+# Kept:
+# - "Enhancement & Research" section (best-practices-researcher, framework-docs-researcher)
+# - compound-engineering:research:session-historian reference in Phase 2

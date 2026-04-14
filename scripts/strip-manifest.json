@@ -1,0 +1,51 @@
+{
+  "description": "Paths to keep from upstream plugins/compound-engineering/. Everything under agents/ and skills/ not listed here is stripped.",
+  "agents": [
+    "agents/research/learnings-researcher.md",
+    "agents/research/session-historian.md",
+    "agents/research/repo-research-analyst.md",
+    "agents/research/issue-intelligence-analyst.md",
+    "agents/research/slack-researcher.md",
+    "agents/research/best-practices-researcher.md",
+    "agents/research/framework-docs-researcher.md",
+    "agents/research/git-history-analyzer.md",
+    "agents/research/session-history-scripts/discover-sessions.sh",
+    "agents/research/session-history-scripts/extract-errors.py",
+    "agents/research/session-history-scripts/extract-metadata.py",
+    "agents/research/session-history-scripts/extract-skeleton.py"
+  ],
+  "skills": [
+    "skills/ce-compound/SKILL.md",
+    "skills/ce-compound/references/schema.yaml",
+    "skills/ce-compound/references/yaml-schema.md",
+    "skills/ce-compound/assets/resolution-template.md",
+    "skills/ce-compound-refresh/SKILL.md",
+    "skills/ce-compound-refresh/references/schema.yaml",
+    "skills/ce-compound-refresh/references/yaml-schema.md",
+    "skills/ce-compound-refresh/assets/resolution-template.md",
+    "skills/ce-sessions/SKILL.md",
+    "skills/ce-plan/SKILL.md",
+    "skills/ce-plan/references/deepening-workflow.md",
+    "skills/ce-plan/references/plan-handoff.md",
+    "skills/ce-plan/references/universal-planning.md",
+    "skills/ce-plan/references/visual-communication.md",
+    "skills/ce-plan/references/deepening-workflow.md",
+    "skills/ce-ideate/SKILL.md",
+    "skills/ce-ideate/references/post-ideation-workflow.md",
+    "skills/ce-brainstorm/SKILL.md",
+    "skills/ce-brainstorm/references/handoff.md",
+    "skills/ce-brainstorm/references/requirements-capture.md",
+    "skills/ce-brainstorm/references/universal-brainstorming.md",
+    "skills/ce-brainstorm/references/visual-communication.md",
+    "skills/ce-debug/SKILL.md",
+    "skills/ce-debug/references/anti-patterns.md",
+    "skills/ce-debug/references/investigation-techniques.md"
+  ],
+  "plugin_metadata": [
+    ".claude-plugin/plugin.json",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "LICENSE",
+    "README.md"
+  ]
+}

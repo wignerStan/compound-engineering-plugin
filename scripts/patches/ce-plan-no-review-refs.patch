@@ -1,0 +1,9 @@
+# Patch: ce-plan-no-review-refs
+# Removes references to document-review skill and spec-flow-analyzer agent
+# from skills/ce-plan/SKILL.md after stripping.
+#
+# Applied by strip-from-upstream.sh using sed commands.
+#
+# Removals:
+# 1. Line referencing compound-engineering:workflow:spec-flow-analyzer
+# 2. Section referencing document-review skill (3 lines)

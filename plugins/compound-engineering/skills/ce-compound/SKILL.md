@@ -306,26 +306,7 @@ After the learning is written and the refresh decision is made, check whether th
       ```
    c. In full mode, explain to the user why this matters — agents working in this repo (including fresh sessions, other tools, or collaborators without the plugin) won't know to check `docs/solutions/` unless the instruction file surfaces it. Show the proposed change and where it would go, then use the platform's blocking question tool (`AskUserQuestion` in Claude Code, `request_user_input` in Codex, `ask_user` in Gemini) to get consent before making the edit. If no question tool is available, present the proposal and wait for the user's reply. In lightweight mode, output a one-liner note and move on
 
-### Phase 3: Optional Enhancement
-
 **WAIT for Phase 2 to complete before proceeding.**
-
-<parallel_tasks>
-
-Based on problem type, optionally invoke specialized agents to review the documentation:
-
-- **performance_issue** → `compound-engineering:review:performance-oracle`
-- **security_issue** → `compound-engineering:review:security-sentinel`
-- **database_issue** → `compound-engineering:review:data-integrity-guardian`
-- Any code-heavy issue → always run `compound-engineering:review:code-simplicity-reviewer`, and additionally run the kieran reviewer that matches the repo's primary stack:
-  - Ruby/Rails → also run `compound-engineering:review:kieran-rails-reviewer`
-  - Python → also run `compound-engineering:review:kieran-python-reviewer`
-  - TypeScript/JavaScript → also run `compound-engineering:review:kieran-typescript-reviewer`
-  - Other stacks → no kieran reviewer needed
-
-</parallel_tasks>
-
----
 
 ### Lightweight Mode
 
@@ -504,19 +485,6 @@ Writes the final learning directly into `docs/solutions/`.
 
 Based on problem type, these agents can enhance documentation:
 
-### Code Quality & Review
-- **compound-engineering:review:kieran-rails-reviewer**: Reviews code examples for Rails best practices
-- **compound-engineering:review:kieran-python-reviewer**: Reviews code examples for Python best practices
-- **compound-engineering:review:kieran-typescript-reviewer**: Reviews code examples for TypeScript best practices
-- **compound-engineering:review:code-simplicity-reviewer**: Ensures solution code is minimal and clear
-- **compound-engineering:review:pattern-recognition-specialist**: Identifies anti-patterns or repeating issues
-
-### Specific Domain Experts
-- **compound-engineering:review:performance-oracle**: Analyzes performance_issue category solutions
-- **compound-engineering:review:security-sentinel**: Reviews security_issue solutions for vulnerabilities
-- **compound-engineering:review:data-integrity-guardian**: Reviews database_issue migrations and queries
-
-### Enhancement & Research
 - **compound-engineering:research:best-practices-researcher**: Enriches solution with industry best practices
 - **compound-engineering:research:framework-docs-researcher**: Links to framework/library documentation references
 
