@@ -1,0 +1,103 @@
+name: Sync Upstream
+
+on:
+  schedule:
+    - cron: '0 14 * * 1,3,5'  # Mon/Wed/Fri at 14:00 UTC
+  workflow_dispatch:  # Manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Add upstream remote
+        run: git remote add upstream https://github.com/EveryInc/compound-engineering-plugin.git
+
+      - name: Fetch upstream
+        run: git fetch upstream main
+
+      - name: Check for changes
+        id: check
+        run: |
+          PREV_COMMIT=""
+          if [ -f "plugins/compound-engineering/.stripped-version.json" ]; then
+            PREV_COMMIT=$(jq -r '.upstream_commit' plugins/compound-engineering/.stripped-version.json)
+          fi
+          UPSTREAM_HEAD=$(git rev-parse upstream/main)
+
+          if [ "$UPSTREAM_HEAD" = "$PREV_COMMIT" ]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "Already up to date."
+            exit 0
+          fi
+
+          # Check if plugin dir changed
+          CHANGED=$(git diff --name-only "$PREV_COMMIT" "upstream/main" -- "plugins/compound-engineering/" 2>/dev/null || true)
+          if [ -z "$CHANGED" ] && [ -n "$PREV_COMMIT" ]; then
+            echo "up_to_date=true" >> "$GITHUB_OUTPUT"
+            echo "No plugin changes in upstream."
+            exit 0
+          fi
+
+          echo "up_to_date=false" >> "$GITHUB_OUTPUT"
+          echo "upstream_version=$(git show upstream/main:plugins/compound-engineering/.claude-plugin/plugin.json | jq -r '.version')" >> "$GITHUB_OUTPUT"
+
+      - name: Run strip
+        if: steps.check.outputs.up_to_date != 'true'
+        run: |
+          mkdir -p /tmp/strip-output
+          bash scripts/strip-from-upstream.sh upstream/main /tmp/strip-output
+
+      - name: Create PR branch
+        if: steps.check.outputs.up_to_date != 'true'
+        run: |
+          BRANCH="sync-upstream-${{ steps.check.outputs.upstream_version }}-$(date +%Y%m%d)"
+          echo "pr_branch=$BRANCH" >> "$GITHUB_ENV"
+          git checkout -b "$BRANCH"
+
+          # Apply stripped output
+          rm -rf plugins/compound-engineering/agents plugins/compound-engineering/skills
+          cp -r /tmp/strip-output/agents /tmp/strip-output/skills /tmp/strip-output/.stripped-version.json plugins/compound-engineering/
+
+          git add -A plugins/compound-engineering/ scripts/
+          git commit -m "chore: sync upstream v${{ steps.check.outputs.upstream_version }}"
+
+          git push origin "$BRANCH"
+
+      - name: Create pull request
+        if: steps.check.outputs.up_to_date != 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr create \
+            --title "chore: sync upstream v${{ steps.check.outputs.upstream_version }}" \
+            --body "$(cat <<'BODY'
+          ## Upstream Sync
+
+          Automatically synced from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin).
+
+          ### Changes
+          - Upstream version: ${{ steps.check.outputs.upstream_version }}
+          - Review the diff in `plugins/compound-engineering/` for changes to research agents and skills
+
+          ### Verification
+          - [ ] Smoke test passes (8 agents, 7 skills present)
+          - [ ] No stray references to removed agents in kept skills
+          - [ ] Plugin loads in Claude Code
+          BODY
+          )" \
+            --base main \
+            --head "$PR_BRANCH"
