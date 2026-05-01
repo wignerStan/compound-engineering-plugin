@@ -82,9 +82,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh pr create \
-            --title "chore: sync upstream v${{ steps.check.outputs.upstream_version }}" \
-            --body "$(cat <<'BODY'
+          BODY=$(cat <<'BODY'
           ## Upstream Sync
 
           Automatically synced from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin).
@@ -98,6 +96,10 @@ jobs:
           - [ ] No stray references to removed agents in kept skills
           - [ ] Plugin loads in Claude Code
           BODY
-          )" \
-            --base main \
-            --head "$PR_BRANCH"
+          )
+          gh api repos/${{ github.repository }}/pulls \
+            --method POST \
+            --field title="chore: sync upstream v${{ steps.check.outputs.upstream_version }}" \
+            --field body="$BODY" \
+            --field base=main \
+            --field head="$PR_BRANCH"
