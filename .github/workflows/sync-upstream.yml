@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   sync:
@@ -61,45 +60,13 @@ jobs:
           mkdir -p /tmp/strip-output
           bash scripts/strip-from-upstream.sh upstream/main /tmp/strip-output
 
-      - name: Create PR branch
+      - name: Merge to main
         if: steps.check.outputs.up_to_date != 'true'
         run: |
-          BRANCH="sync-upstream-${{ steps.check.outputs.upstream_version }}-$(date +%Y%m%d)"
-          echo "PR_BRANCH=$BRANCH" >> "$GITHUB_ENV"
-          git checkout -b "$BRANCH"
-
-          # Apply stripped output
+          # Apply stripped output directly on main
           rm -rf plugins/compound-engineering/agents plugins/compound-engineering/skills
           cp -r /tmp/strip-output/agents /tmp/strip-output/skills /tmp/strip-output/.stripped-version.json plugins/compound-engineering/
 
-          git add -A plugins/compound-engineering/ scripts/
+          git add -A plugins/compound-engineering/
           git commit -m "chore: sync upstream v${{ steps.check.outputs.upstream_version }}"
-
-          git push origin "$BRANCH"
-
-      - name: Create pull request
-        if: steps.check.outputs.up_to_date != 'true'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          BODY=$(cat <<'BODY'
-          ## Upstream Sync
-
-          Automatically synced from [EveryInc/compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin).
-
-          ### Changes
-          - Upstream version: ${{ steps.check.outputs.upstream_version }}
-          - Review the diff in `plugins/compound-engineering/` for changes to research agents and skills
-
-          ### Verification
-          - [ ] Smoke test passes (8 agents, 9 skills present)
-          - [ ] No stray references to removed agents in kept skills
-          - [ ] Plugin loads in Claude Code
-          BODY
-          )
-          gh api repos/${{ github.repository }}/pulls \
-            --method POST \
-            --field title="chore: sync upstream v${{ steps.check.outputs.upstream_version }}" \
-            --field body="$BODY" \
-            --field base=main \
-            --field head="$PR_BRANCH"
+          git push origin main
