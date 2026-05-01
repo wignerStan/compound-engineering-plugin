@@ -45,7 +45,7 @@ Present the user with two options before proceeding, using the platform's blocki
    context limits.
 ```
 
-Do NOT pre-select a mode. Do NOT skip this prompt. Wait for the user's choice before proceeding.
+Do NOT pre-select a mode. Do NOT skip this prompt. Wait for the user's choice before proceeding — **except** when the user's arguments provide enough context to determine the mode. Skip the prompt and execute directly when the user signals intent through their arguments: mentioning specific harnesses ("codex and claude session"), requesting thorough research ("dig into", "exhaustive"), or providing detailed multi-step instructions implies Full mode. Explicit "lightweight" / "quick" / "fast" or mentioning context limits implies Lightweight mode. A bare `/ce:compound` with no arguments or vague context always gets the prompt.
 
 **If the user chooses Full**, ask one follow-up question before proceeding. Detect which harness is running (Claude Code, Codex, or Cursor) and ask:
 

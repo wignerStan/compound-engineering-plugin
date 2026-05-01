@@ -1,0 +1,10 @@
+# Patch: ce-compound-smart-mode-select
+# Replaces the strict "Do NOT pre-select a mode" prompt with smart mode detection.
+#
+# Applied by strip-from-upstream.sh using sed.
+#
+# Before: Always prompts user to choose Full vs Lightweight, even when args
+#         clearly signal intent.
+# After:  Skips the prompt when user args contain clear signals (harness names,
+#         "dig into", "exhaustive" → Full; "quick"/"lightweight" → Lightweight).
+#         Bare /ce:compound with no args still always prompts.

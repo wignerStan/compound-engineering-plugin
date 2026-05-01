@@ -146,13 +146,18 @@ if [ -d "$PATCHES_DIR" ]; then
         # Clean up empty lines left behind
         sed -i '/^$/N;/^\n$/d' "$SKILL_FILE"
         ;;
+      ce-compound-smart-mode-select)
+        SKILL_FILE="$OUTPUT_DIR/skills/ce-compound/SKILL.md"
+        sed -i 's|^Do NOT pre-select a mode\. Do NOT skip this prompt\. Wait for the user.*$|Do NOT pre-select a mode. Do NOT skip this prompt. Wait for the user'\''s choice before proceeding — **except** when the user'\''s arguments provide enough context to determine the mode. Skip the prompt and execute directly when the user signals intent through their arguments: mentioning specific harnesses ("codex and claude session"), requesting thorough research ("dig into", "exhaustive"), or providing detailed multi-step instructions implies Full mode. Explicit "lightweight" / "quick" / "fast" or mentioning context limits implies Lightweight mode. A bare `/ce:compound` with no arguments or vague context always gets the prompt.|' "$SKILL_FILE"
+        ;;
     esac
   done
 fi
 
 # Step 4: Copy local overrides
 echo "Applying local overrides..."
-if [ -d "$LOCAL_OVERRIDES_DIR" ] && [ "$(ls -A "$LOCAL_OVERRIDES_DIR" 2>/dev/null)" ]; then
+# compgen -G checks if glob matches any non-hidden files (avoids .gitkeep false positive)
+if [ -d "$LOCAL_OVERRIDES_DIR" ] && compgen -G "${LOCAL_OVERRIDES_DIR}/*" > /dev/null 2>&1; then
   cp -r "$LOCAL_OVERRIDES_DIR"/* "$OUTPUT_DIR/"
 fi
 
