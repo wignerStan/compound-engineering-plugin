@@ -1,7 +1,7 @@
 {
-  "upstream_version": "3.3.2",
-  "upstream_commit": "ae408721cdfd739688a397e11deca4f4b7ec9eae",
-  "upstream_commit_date": "2026-05-01 01:21:44 -0700",
-  "strip_timestamp": "2026-05-01T12:31:03Z",
+  "upstream_version": "3.4.0",
+  "upstream_commit": "e12afb1e4392c432d7644894fb534abe8cac6b9f",
+  "upstream_commit_date": "2026-05-01 07:23:44 -0700",
+  "strip_timestamp": "2026-05-01T14:49:41Z",
   "manifest": "scripts/strip-manifest.json"
 }
