@@ -189,14 +189,14 @@ ERRORS=0
 
 # Check agents
 EXPECTED_AGENTS=(
-  "agents/research/learnings-researcher.md"
-  "agents/research/session-historian.md"
-  "agents/research/repo-research-analyst.md"
-  "agents/research/issue-intelligence-analyst.md"
-  "agents/research/slack-researcher.md"
-  "agents/research/best-practices-researcher.md"
-  "agents/research/framework-docs-researcher.md"
-  "agents/research/git-history-analyzer.md"
+  "agents/ce-learnings-researcher.agent.md"
+  "agents/ce-session-historian.agent.md"
+  "agents/ce-repo-research-analyst.agent.md"
+  "agents/ce-issue-intelligence-analyst.agent.md"
+  "agents/ce-slack-researcher.agent.md"
+  "agents/ce-best-practices-researcher.agent.md"
+  "agents/ce-framework-docs-researcher.agent.md"
+  "agents/ce-git-history-analyzer.agent.md"
 )
 
 for agent in "${EXPECTED_AGENTS[@]}"; do
@@ -210,6 +210,8 @@ EXPECTED_SKILLS=(
   "skills/ce-compound/SKILL.md"
   "skills/ce-compound-refresh/SKILL.md"
   "skills/ce-sessions/SKILL.md"
+  "skills/ce-session-extract/SKILL.md"
+  "skills/ce-session-inventory/SKILL.md"
   "skills/ce-plan/SKILL.md"
   "skills/ce-ideate/SKILL.md"
   "skills/ce-brainstorm/SKILL.md"
@@ -223,11 +225,19 @@ for skill in "${EXPECTED_SKILLS[@]}"; do
   fi
 done
 
-# Check no stray agent directories exist (only research/ should remain)
-for dir in "$OUTPUT_DIR/agents"/*/; do
-  dirname=$(basename "$dir")
-  if [ "$dirname" != "research" ]; then
-    echo "  FAIL: Unexpected agent directory: agents/$dirname/"
+# Check no stray agent files exist beyond the expected ones (agents are now flat, no subdirectories)
+for agent_file in "$OUTPUT_DIR/agents"/*.agent.md; do
+  [ -f "$agent_file" ] || continue
+  basename=$(basename "$agent_file")
+  found=false
+  for expected in "${EXPECTED_AGENTS[@]}"; do
+    if [ "$(basename "$expected")" = "$basename" ]; then
+      found=true
+      break
+    fi
+  done
+  if [ "$found" = false ]; then
+    echo "  FAIL: Unexpected agent file: agents/$basename"
     ERRORS=$((ERRORS + 1))
   fi
 done
