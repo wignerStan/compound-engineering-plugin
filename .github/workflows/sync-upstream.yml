@@ -65,7 +65,7 @@ jobs:
         if: steps.check.outputs.up_to_date != 'true'
         run: |
           BRANCH="sync-upstream-${{ steps.check.outputs.upstream_version }}-$(date +%Y%m%d)"
-          echo "pr_branch=$BRANCH" >> "$GITHUB_ENV"
+          echo "PR_BRANCH=$BRANCH" >> "$GITHUB_ENV"
           git checkout -b "$BRANCH"
 
           # Apply stripped output
@@ -94,7 +94,7 @@ jobs:
           - Review the diff in `plugins/compound-engineering/` for changes to research agents and skills
 
           ### Verification
-          - [ ] Smoke test passes (8 agents, 7 skills present)
+          - [ ] Smoke test passes (8 agents, 9 skills present)
           - [ ] No stray references to removed agents in kept skills
           - [ ] Plugin loads in Claude Code
           BODY
