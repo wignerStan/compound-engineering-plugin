@@ -189,14 +189,14 @@ ERRORS=0
 
 # Check agents
 EXPECTED_AGENTS=(
-  "agents/ce-learnings-researcher.agent.md"
-  "agents/ce-session-historian.agent.md"
-  "agents/ce-repo-research-analyst.agent.md"
-  "agents/ce-issue-intelligence-analyst.agent.md"
-  "agents/ce-slack-researcher.agent.md"
-  "agents/ce-best-practices-researcher.agent.md"
-  "agents/ce-framework-docs-researcher.agent.md"
-  "agents/ce-git-history-analyzer.agent.md"
+  "agents/ce-learnings-researcher.md"
+  "agents/ce-session-historian.md"
+  "agents/ce-repo-research-analyst.md"
+  "agents/ce-issue-intelligence-analyst.md"
+  "agents/ce-slack-researcher.md"
+  "agents/ce-best-practices-researcher.md"
+  "agents/ce-framework-docs-researcher.md"
+  "agents/ce-git-history-analyzer.md"
 )
 
 for agent in "${EXPECTED_AGENTS[@]}"; do
@@ -210,8 +210,6 @@ EXPECTED_SKILLS=(
   "skills/ce-compound/SKILL.md"
   "skills/ce-compound-refresh/SKILL.md"
   "skills/ce-sessions/SKILL.md"
-  "skills/ce-session-extract/SKILL.md"
-  "skills/ce-session-inventory/SKILL.md"
   "skills/ce-plan/SKILL.md"
   "skills/ce-ideate/SKILL.md"
   "skills/ce-brainstorm/SKILL.md"
@@ -226,7 +224,7 @@ for skill in "${EXPECTED_SKILLS[@]}"; do
 done
 
 # Check no stray agent files exist beyond the expected ones (agents are now flat, no subdirectories)
-for agent_file in "$OUTPUT_DIR/agents"/*.agent.md; do
+for agent_file in "$OUTPUT_DIR/agents"/*.md; do
   [ -f "$agent_file" ] || continue
   basename=$(basename "$agent_file")
   found=false
